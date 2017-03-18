@@ -36,7 +36,7 @@ static void report_util_feedback_line_feed() { serial_write(']'); report_util_li
 static void report_util_gcode_modes_G() { printPgmString(PSTR(" G")); }
 static void report_util_gcode_modes_M() { printPgmString(PSTR(" M")); }
 // static void report_util_comment_line_feed() { serial_write(')'); report_util_line_feed(); }
-static void report_util_axis_values(float *axis_value) {
+static void report_util_axis_values(FLOAT *axis_value) {
   uint8_t idx;
   for (idx=0; idx<N_AXIS; idx++) {
     printFloat_CoordValue(axis_value[idx]);
@@ -96,7 +96,7 @@ static void report_util_uint8_setting(uint8_t n, int val) {
   print_uint8_base10(val); 
   report_util_line_feed(); // report_util_setting_string(n); 
 }
-static void report_util_float_setting(uint8_t n, float val, uint8_t n_decimal) { 
+static void report_util_float_setting(uint8_t n, FLOAT val, uint8_t n_decimal) { 
   report_util_setting_prefix(n); 
   printFloat(val,n_decimal);
   report_util_line_feed(); // report_util_setting_string(n);
@@ -232,7 +232,7 @@ void report_probe_parameters()
 {
   // Report in terms of machine position.
   printPgmString(PSTR("[PRB:"));
-  float print_position[N_AXIS];
+  FLOAT print_position[N_AXIS];
   system_convert_array_steps_to_mpos(print_position,sys_probe_position);
   report_util_axis_values(print_position);
   serial_write(':');
@@ -244,7 +244,7 @@ void report_probe_parameters()
 // Prints Grbl NGC parameters (coordinate offsets, probing)
 void report_ngc_parameters()
 {
-  float coord_data[N_AXIS];
+  FLOAT coord_data[N_AXIS];
   uint8_t coord_select;
   for (coord_select = 0; coord_select <= SETTING_INDEX_NCOORD; coord_select++) {
     if (!(settings_read_coord_data(coord_select,coord_data))) {
@@ -463,7 +463,7 @@ void report_realtime_status()
   uint8_t idx;
   int32_t current_position[N_AXIS]; // Copy current state of the system position variable
   memcpy(current_position,sys_position,sizeof(sys_position));
-  float print_position[N_AXIS];
+  FLOAT print_position[N_AXIS];
   system_convert_array_steps_to_mpos(print_position,current_position);
 
   // Report current machine state and sub-states
@@ -501,7 +501,7 @@ void report_realtime_status()
     case STATE_SLEEP: printPgmString(PSTR("Sleep")); break;
   }
 
-  float wco[N_AXIS];
+  FLOAT wco[N_AXIS];
   if (bit_isfalse(settings.status_report_mask,BITFLAG_RT_STATUS_POSITION_TYPE) ||
       (sys.report_wco_counter == 0) ) {
     for (idx=0; idx< N_AXIS; idx++) {

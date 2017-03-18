@@ -23,7 +23,7 @@
 
 
 #ifdef VARIABLE_SPINDLE
-  static float pwm_gradient; // Precalulated value to speed up rpm to PWM conversions.
+  static FLOAT pwm_gradient; // Precalulated value to speed up rpm to PWM conversions.
 #endif
 
 
@@ -138,7 +138,7 @@ void spindle_stop()
 
 
   // Called by spindle_set_state() and step segment generator. Keep routine small and efficient.
-  uint8_t spindle_compute_pwm_value(float rpm) // 328p PWM register is 8-bit.
+  uint8_t spindle_compute_pwm_value(FLOAT rpm) // 328p PWM register is 8-bit.
   {
     uint8_t pwm_value;
     rpm *= (0.010*sys.spindle_speed_ovr); // Scale by spindle speed override value.
@@ -170,7 +170,7 @@ void spindle_stop()
 // Called by g-code parser spindle_sync(), parking retract and restore, g-code program end,
 // sleep, and spindle stop override.
 #ifdef VARIABLE_SPINDLE
-  void spindle_set_state(uint8_t state, float rpm)
+  void spindle_set_state(uint8_t state, FLOAT rpm)
 #else
   void _spindle_set_state(uint8_t state)
 #endif
@@ -220,7 +220,7 @@ void spindle_stop()
 // G-code parser entry-point for setting spindle state. Forces a planner buffer sync and bails 
 // if an abort or check-mode is active.
 #ifdef VARIABLE_SPINDLE
-  void spindle_sync(uint8_t state, float rpm)
+  void spindle_sync(uint8_t state, FLOAT rpm)
   {
     if (sys.state == STATE_CHECK_MODE) { return; }
     protocol_buffer_synchronize(); // Empty planner buffer to ensure spindle is set when programmed.

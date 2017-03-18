@@ -29,7 +29,7 @@
 // segments, must pass through this routine before being passed to the planner. The seperation of
 // mc_line and plan_buffer_line is done primarily to place non-planner-type functions from being
 // in the planner and to let backlash compensation or canned cycle integration simple and direct.
-void mc_line(float *target, plan_line_data_t *pl_data)
+void mc_line(FLOAT *target, plan_line_data_t *pl_data)
 {
   // If enabled, check for soft limit violations. Placed here all line motions are picked up
   // from everywhere in Grbl.
@@ -84,18 +84,18 @@ void mc_line(float *target, plan_line_data_t *pl_data)
 // The arc is approximated by generating a huge number of tiny, linear segments. The chordal tolerance
 // of each segment is configured in settings.arc_tolerance, which is defined to be the maximum normal
 // distance from segment to the circle when the end points both lie on the circle.
-void mc_arc(float *target, plan_line_data_t *pl_data, float *position, float *offset, float radius,
+void mc_arc(FLOAT *target, plan_line_data_t *pl_data, FLOAT *position, FLOAT *offset, FLOAT radius,
   uint8_t axis_0, uint8_t axis_1, uint8_t axis_linear, uint8_t is_clockwise_arc)
 {
-  float center_axis0 = position[axis_0] + offset[axis_0];
-  float center_axis1 = position[axis_1] + offset[axis_1];
-  float r_axis0 = -offset[axis_0];  // Radius vector from center to current location
-  float r_axis1 = -offset[axis_1];
-  float rt_axis0 = target[axis_0] - center_axis0;
-  float rt_axis1 = target[axis_1] - center_axis1;
+  FLOAT center_axis0 = position[axis_0] + offset[axis_0];
+  FLOAT center_axis1 = position[axis_1] + offset[axis_1];
+  FLOAT r_axis0 = -offset[axis_0];  // Radius vector from center to current location
+  FLOAT r_axis1 = -offset[axis_1];
+  FLOAT rt_axis0 = target[axis_0] - center_axis0;
+  FLOAT rt_axis1 = target[axis_1] - center_axis1;
 
   // CCW angle between position and target from circle center. Only one atan2() trig computation required.
-  float angular_travel = atan2(r_axis0*rt_axis1-r_axis1*rt_axis0, r_axis0*rt_axis0+r_axis1*rt_axis1);
+  FLOAT angular_travel = atan2(r_axis0*rt_axis1-r_axis1*rt_axis0, r_axis0*rt_axis0+r_axis1*rt_axis1);
   if (is_clockwise_arc) { // Correct atan2 output per direction
     if (angular_travel >= -ARC_ANGULAR_TRAVEL_EPSILON) { angular_travel -= 2*M_PI; }
   } else {
@@ -118,8 +118,8 @@ void mc_arc(float *target, plan_line_data_t *pl_data, float *position, float *of
       bit_false(pl_data->condition,PL_COND_FLAG_INVERSE_TIME); // Force as feed absolute mode over arc segments.
     }
     
-    float theta_per_segment = angular_travel/segments;
-    float linear_per_segment = (target[axis_linear] - position[axis_linear])/segments;
+    FLOAT theta_per_segment = angular_travel/segments;
+    FLOAT linear_per_segment = (target[axis_linear] - position[axis_linear])/segments;
 
     /* Vector rotation by transformation matrix: r is the original vector, r_T is the rotated vector,
        and phi is the angle of rotation. Solution approach by Jens Geisler.
@@ -147,13 +147,13 @@ void mc_arc(float *target, plan_line_data_t *pl_data, float *position, float *of
        This is important when there are successive arc motions.
     */
     // Computes: cos_T = 1 - theta_per_segment^2/2, sin_T = theta_per_segment - theta_per_segment^3/6) in ~52usec
-    float cos_T = 2.0 - theta_per_segment*theta_per_segment;
-    float sin_T = theta_per_segment*0.16666667*(cos_T + 4.0);
+    FLOAT cos_T = 2.0 - theta_per_segment*theta_per_segment;
+    FLOAT sin_T = theta_per_segment*0.16666667*(cos_T + 4.0);
     cos_T *= 0.5;
 
-    float sin_Ti;
-    float cos_Ti;
-    float r_axisi;
+    FLOAT sin_Ti;
+    FLOAT cos_Ti;
+    FLOAT r_axisi;
     uint16_t i;
     uint8_t count = 0;
 
@@ -192,7 +192,7 @@ void mc_arc(float *target, plan_line_data_t *pl_data, float *position, float *of
 
 
 // Execute dwell in seconds.
-void mc_dwell(float seconds)
+void mc_dwell(FLOAT seconds)
 {
   if (sys.state == STATE_CHECK_MODE) { return; }
   protocol_buffer_synchronize();
@@ -253,7 +253,7 @@ void mc_homing_cycle(uint8_t cycle_mask)
 
 // Perform tool length probe cycle. Requires probe switch.
 // NOTE: Upon probe failure, the program will be stopped and placed into ALARM state.
-uint8_t mc_probe_cycle(float *target, plan_line_data_t *pl_data, uint8_t parser_flags)
+uint8_t mc_probe_cycle(FLOAT *target, plan_line_data_t *pl_data, uint8_t parser_flags)
 {
   // TODO: Need to update this cycle so it obeys a non-auto cycle start.
   if (sys.state == STATE_CHECK_MODE) { return(GC_PROBE_CHECK_MODE); }
@@ -321,7 +321,7 @@ uint8_t mc_probe_cycle(float *target, plan_line_data_t *pl_data, uint8_t parser_
 // Plans and executes the single special motion case for parking. Independent of main planner buffer.
 // NOTE: Uses the always free planner ring buffer head to store motion parameters for execution.
 #ifdef PARKING_ENABLE
-  void mc_parking_motion(float *parking_target, plan_line_data_t *pl_data)
+  void mc_parking_motion(FLOAT *parking_target, plan_line_data_t *pl_data)
   {
     if (sys.abort) { return; } // Block during abort.
 

@@ -121,7 +121,7 @@ uint8_t system_execute_line(char *line)
 {
   uint8_t char_counter = 1;
   uint8_t helper_var = 0; // Helper variable
-  float parameter, value;
+  FLOAT parameter, value;
   switch( line[char_counter] ) {
     case 0 : report_grbl_help(); break;
     case 'J' : // Jogging
@@ -286,14 +286,14 @@ void system_flag_wco_change()
 // Returns machine position of axis 'idx'. Must be sent a 'step' array.
 // NOTE: If motor steps and machine position are not in the same coordinate frame, this function
 //   serves as a central place to compute the transformation.
-float system_convert_axis_steps_to_mpos(int32_t *steps, uint8_t idx)
+FLOAT system_convert_axis_steps_to_mpos(int32_t *steps, uint8_t idx)
 {
-  float pos;
+  FLOAT pos;
   #ifdef COREXY
     if (idx==X_AXIS) {
-      pos = (float)system_convert_corexy_to_x_axis_steps(steps) / settings.steps_per_mm[idx];
+      pos = (FLOAT)system_convert_corexy_to_x_axis_steps(steps) / settings.steps_per_mm[idx];
     } else if (idx==Y_AXIS) {
-      pos = (float)system_convert_corexy_to_y_axis_steps(steps) / settings.steps_per_mm[idx];
+      pos = (FLOAT)system_convert_corexy_to_y_axis_steps(steps) / settings.steps_per_mm[idx];
     } else {
       pos = steps[idx]/settings.steps_per_mm[idx];
     }
@@ -304,7 +304,7 @@ float system_convert_axis_steps_to_mpos(int32_t *steps, uint8_t idx)
 }
 
 
-void system_convert_array_steps_to_mpos(float *position, int32_t *steps)
+void system_convert_array_steps_to_mpos(FLOAT *position, int32_t *steps)
 {
   uint8_t idx;
   for (idx=0; idx<N_AXIS; idx++) {
@@ -328,7 +328,7 @@ void system_convert_array_steps_to_mpos(float *position, int32_t *steps)
 
 
 // Checks and reports if target array exceeds machine travel limits.
-uint8_t system_check_travel_limits(float *target)
+uint8_t system_check_travel_limits(FLOAT *target)
 {
   uint8_t idx;
   for (idx=0; idx<N_AXIS; idx++) {

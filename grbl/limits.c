@@ -159,8 +159,8 @@ void limits_go_home(uint8_t cycle_mask)
   // Initialize variables used for homing computations.
   uint8_t n_cycle = (2*N_HOMING_LOCATE_CYCLE+1);
   uint8_t step_pin[N_AXIS];
-  float target[N_AXIS];
-  float max_travel = 0.0;
+  FLOAT target[N_AXIS];
+  FLOAT max_travel = 0.0;
   uint8_t idx;
   for (idx=0; idx<N_AXIS; idx++) {
     // Initialize step pin masks
@@ -178,7 +178,7 @@ void limits_go_home(uint8_t cycle_mask)
 
   // Set search mode with approach at seek rate to quickly engage the specified cycle_mask limit switches.
   bool approach = true;
-  float homing_rate = settings.homing_seek_rate;
+  FLOAT homing_rate = settings.homing_seek_rate;
 
   uint8_t limit_state, axislock, n_active_axis;
   do {
@@ -338,7 +338,7 @@ void limits_go_home(uint8_t cycle_mask)
 // Performs a soft limit check. Called from mc_line() only. Assumes the machine has been homed,
 // the workspace volume is in all negative space, and the system is in normal operation.
 // NOTE: Used by jogging to limit travel within soft-limit volume.
-void limits_soft_check(float *target)
+void limits_soft_check(FLOAT *target)
 {
   if (system_check_travel_limits(target)) {
     sys.soft_limit = true;

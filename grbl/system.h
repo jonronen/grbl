@@ -141,7 +141,7 @@ typedef struct {
     uint8_t override_ctrl;     // Tracks override control states.
   #endif
   #ifdef VARIABLE_SPINDLE
-    float spindle_speed;
+    FLOAT spindle_speed;
   #endif
 } system_t;
 extern system_t sys;
@@ -180,10 +180,10 @@ void system_execute_startup(char *line);
 void system_flag_wco_change();
 
 // Returns machine position of axis 'idx'. Must be sent a 'step' array.
-float system_convert_axis_steps_to_mpos(int32_t *steps, uint8_t idx);
+FLOAT system_convert_axis_steps_to_mpos(int32_t *steps, uint8_t idx);
 
 // Updates a machine 'position' array based on the 'step' array sent.
-void system_convert_array_steps_to_mpos(float *position, int32_t *steps);
+void system_convert_array_steps_to_mpos(FLOAT *position, int32_t *steps);
 
 // CoreXY calculation only. Returns x or y-axis "steps" based on CoreXY motor steps.
 #ifdef COREXY
@@ -192,7 +192,7 @@ void system_convert_array_steps_to_mpos(float *position, int32_t *steps);
 #endif
 
 // Checks and reports if target array exceeds machine travel limits.
-uint8_t system_check_travel_limits(float *target);
+uint8_t system_check_travel_limits(FLOAT *target);
 
 // Special handlers for setting and clearing Grbl's real-time execution flags.
 void system_set_exec_state_flag(uint8_t mask);

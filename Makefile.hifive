@@ -1,0 +1,44 @@
+#  Part of Grbl
+#
+#  Copyright (c) 2009-2011 Simen Svale Skogsrud
+#  Copyright (c) 2012-2016 Sungeun K. Jeon for Gnea Research LLC
+#  Copyright (c) 2017 Jon Ronen-Drori <jon_ronen@yahoo.com>
+#
+#  Grbl is free software: you can redistribute it and/or modify
+#  it under the terms of the GNU General Public License as published by
+#  the Free Software Foundation, either version 3 of the License, or
+#  (at your option) any later version.
+#
+#  Grbl is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with Grbl.  If not, see <http://www.gnu.org/licenses/>.
+
+
+# This is a prototype Makefile. Modify it according to your needs.
+# You should at least check the settings for
+# HIFIVE_BSP_BASE ..... The HiFive BSP folder (part of the E300 SDK)
+
+BSP_BASE = /projects/freedom-e-sdk/bsp
+
+SOURCEDIR = grbl
+
+SOURCES += main.c motion_control.c gcode.c spindle_control.c coolant_control.c
+SOURCES += serial.c protocol.c stepper.c eeprom.c settings.c planner.c
+SOURCES += nuts_bolts.c limits.c jog.c print.c probe.c report.c system.c
+C_SRCS += $(addprefix $(SOURCEDIR)/,$(SOURCES))
+
+TARGET = grbl_program
+CFLAGS += -O2 -fno-builtin-printf -Iplatform/hifive -DUSE_PLIC -DUSE_M_TIME
+LDFLAGS += -lm
+
+#C_SRCS += main.c gcode.c motion_control.c nuts_bolts.c planner.c print.c
+#C_SRCS += protocol.c report.c serial.c settings.c stepper.c
+#C_SRCS += system.c
+C_SRCS += $(BSP_BASE)/drivers/plic/plic_driver.c
+
+include $(BSP_BASE)/env/common.mk
+

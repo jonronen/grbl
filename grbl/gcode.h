@@ -197,34 +197,34 @@ typedef struct {
 } gc_modal_t;
 
 typedef struct {
-  float f;         // Feed
-  float ijk[3];    // I,J,K Axis arc offsets
+  FLOAT f;         // Feed
+  FLOAT ijk[3];    // I,J,K Axis arc offsets
   uint8_t l;       // G10 or canned cycles parameters
   int32_t n;       // Line number
-  float p;         // G10 or dwell parameters
-  // float q;      // G82 peck drilling
-  float r;         // Arc radius
-  float s;         // Spindle speed
+  FLOAT p;         // G10 or dwell parameters
+  // FLOAT q;      // G82 peck drilling
+  FLOAT r;         // Arc radius
+  FLOAT s;         // Spindle speed
   uint8_t t;       // Tool selection
-  float xyz[3];    // X,Y,Z Translational axes
+  FLOAT xyz[3];    // X,Y,Z Translational axes
 } gc_values_t;
 
 
 typedef struct {
   gc_modal_t modal;
 
-  float spindle_speed;          // RPM
-  float feed_rate;              // Millimeters/min
+  FLOAT spindle_speed;          // RPM
+  FLOAT feed_rate;              // Millimeters/min
   uint8_t tool;                 // Tracks tool number. NOT USED.
   int32_t line_number;          // Last line number sent
 
-  float position[N_AXIS];       // Where the interpreter considers the tool to be at this point in the code
+  FLOAT position[N_AXIS];       // Where the interpreter considers the tool to be at this point in the code
 
-  float coord_system[N_AXIS];    // Current work coordinate system (G54+). Stores offset from absolute machine
+  FLOAT coord_system[N_AXIS];    // Current work coordinate system (G54+). Stores offset from absolute machine
                                  // position in mm. Loaded from EEPROM when called.
-  float coord_offset[N_AXIS];    // Retains the G92 coordinate offset (work coordinates) relative to
+  FLOAT coord_offset[N_AXIS];    // Retains the G92 coordinate offset (work coordinates) relative to
                                  // machine zero in mm. Non-persistent. Cleared upon reset and boot.
-  float tool_length_offset;      // Tracks tool length offset value when enabled.
+  FLOAT tool_length_offset;      // Tracks tool length offset value when enabled.
 } parser_state_t;
 extern parser_state_t gc_state;
 

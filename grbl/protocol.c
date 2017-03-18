@@ -507,9 +507,9 @@ static void protocol_exec_rt_suspend()
 {
   #ifdef PARKING_ENABLE
     // Declare and initialize parking local variables
-    float restore_target[N_AXIS];
-    float parking_target[N_AXIS];
-    float retract_waypoint = PARKING_PULLOUT_INCREMENT;
+    FLOAT restore_target[N_AXIS];
+    FLOAT parking_target[N_AXIS];
+    FLOAT retract_waypoint = PARKING_PULLOUT_INCREMENT;
     plan_line_data_t plan_data;
     plan_line_data_t *pl_data = &plan_data;
     memset(pl_data,0,sizeof(plan_line_data_t));
@@ -522,7 +522,7 @@ static void protocol_exec_rt_suspend()
   plan_block_t *block = plan_get_current_block();
   uint8_t restore_condition;
   #ifdef VARIABLE_SPINDLE
-    float restore_spindle_speed;
+    FLOAT restore_spindle_speed;
     if (block == NULL) {
       restore_condition = (gc_state.modal.spindle | gc_state.modal.coolant);
       restore_spindle_speed = gc_state.spindle_speed;

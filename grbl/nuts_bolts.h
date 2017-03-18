@@ -51,11 +51,11 @@
 
 // Useful macros
 #define clear_vector(a) memset(a, 0, sizeof(a))
-#define clear_vector_float(a) memset(a, 0.0, sizeof(float)*N_AXIS)
+#define clear_vector_float(a) memset(a, 0.0, sizeof(FLOAT)*N_AXIS)
 // #define clear_vector_long(a) memset(a, 0.0, sizeof(long)*N_AXIS)
 #define max(a,b) (((a) > (b)) ? (a) : (b))
 #define min(a,b) (((a) < (b)) ? (a) : (b))
-#define isequal_position_vector(a,b) !(memcmp(a, b, sizeof(float)*N_AXIS))
+#define isequal_position_vector(a,b) !(memcmp(a, b, sizeof(FLOAT)*N_AXIS))
 
 // Bit field and masking macros
 #define bit(n) (1 << n)
@@ -67,10 +67,10 @@
 // Read a floating point value from a string. Line points to the input buffer, char_counter
 // is the indexer pointing to the current character of the line, while float_ptr is
 // a pointer to the result variable. Returns true when it succeeds
-uint8_t read_float(char *line, uint8_t *char_counter, float *float_ptr);
+uint8_t read_float(char *line, uint8_t *char_counter, FLOAT *float_ptr);
 
 // Non-blocking delay function used for general operation and suspend features.
-void delay_sec(float seconds, uint8_t mode);
+void delay_sec(FLOAT seconds, uint8_t mode);
 
 // Delays variable-defined milliseconds. Compiler compatibility fix for _delay_ms().
 void delay_ms(uint16_t ms);
@@ -79,9 +79,9 @@ void delay_ms(uint16_t ms);
 void delay_us(uint32_t us);
 
 // Computes hypotenuse, avoiding avr-gcc's bloated version and the extra error checking.
-float hypot_f(float x, float y);
+FLOAT hypot_f(FLOAT x, FLOAT y);
 
-float convert_delta_vector_to_unit_vector(float *vector);
-float limit_value_by_axis_maximum(float *max_value, float *unit_vec);
+FLOAT convert_delta_vector_to_unit_vector(FLOAT *vector);
+FLOAT limit_value_by_axis_maximum(FLOAT *max_value, FLOAT *unit_vec);
 
 #endif

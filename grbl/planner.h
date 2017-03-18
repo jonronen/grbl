@@ -66,29 +66,29 @@ typedef struct {
 
   // Fields used by the motion planner to manage acceleration. Some of these values may be updated
   // by the stepper module during execution of special motion cases for replanning purposes.
-  float entry_speed_sqr;     // The current planned entry speed at block junction in (mm/min)^2
-  float max_entry_speed_sqr; // Maximum allowable entry speed based on the minimum of junction limit and
+  FLOAT entry_speed_sqr;     // The current planned entry speed at block junction in (mm/min)^2
+  FLOAT max_entry_speed_sqr; // Maximum allowable entry speed based on the minimum of junction limit and
                              //   neighboring nominal speeds with overrides in (mm/min)^2
-  float acceleration;        // Axis-limit adjusted line acceleration in (mm/min^2). Does not change.
-  float millimeters;         // The remaining distance for this block to be executed in (mm).
+  FLOAT acceleration;        // Axis-limit adjusted line acceleration in (mm/min^2). Does not change.
+  FLOAT millimeters;         // The remaining distance for this block to be executed in (mm).
                              // NOTE: This value may be altered by stepper algorithm during execution.
 
   // Stored rate limiting data used by planner when changes occur.
-  float max_junction_speed_sqr; // Junction entry speed limit based on direction vectors in (mm/min)^2
-  float rapid_rate;             // Axis-limit adjusted maximum rate for this block direction in (mm/min)
-  float programmed_rate;        // Programmed rate of this block (mm/min).
+  FLOAT max_junction_speed_sqr; // Junction entry speed limit based on direction vectors in (mm/min)^2
+  FLOAT rapid_rate;             // Axis-limit adjusted maximum rate for this block direction in (mm/min)
+  FLOAT programmed_rate;        // Programmed rate of this block (mm/min).
 
   #ifdef VARIABLE_SPINDLE
     // Stored spindle speed data used by spindle overrides and resuming methods.
-    float spindle_speed;    // Block spindle speed. Copied from pl_line_data.
+    FLOAT spindle_speed;    // Block spindle speed. Copied from pl_line_data.
   #endif
 } plan_block_t;
 
 
 // Planner data prototype. Must be used when passing new motions to the planner.
 typedef struct {
-  float feed_rate;          // Desired feed rate for line motion. Value is ignored, if rapid motion.
-  float spindle_speed;      // Desired spindle speed through line motion.
+  FLOAT feed_rate;          // Desired feed rate for line motion. Value is ignored, if rapid motion.
+  FLOAT spindle_speed;      // Desired spindle speed through line motion.
   uint8_t condition;        // Bitflag variable to indicate planner conditions. See defines above.
   #ifdef USE_LINE_NUMBERS
     int32_t line_number;    // Desired line number to report when executing.
@@ -103,7 +103,7 @@ void plan_reset_buffer(); // Reset buffer only.
 // Add a new linear movement to the buffer. target[N_AXIS] is the signed, absolute target position
 // in millimeters. Feed rate specifies the speed of the motion. If feed rate is inverted, the feed
 // rate is taken to mean "frequency" and would complete the operation in 1/feed_rate minutes.
-uint8_t plan_buffer_line(float *target, plan_line_data_t *pl_data);
+uint8_t plan_buffer_line(FLOAT *target, plan_line_data_t *pl_data);
 
 // Called when the current block is no longer needed. Discards the block and makes the memory
 // availible for new blocks.
@@ -119,10 +119,10 @@ plan_block_t *plan_get_current_block();
 uint8_t plan_next_block_index(uint8_t block_index);
 
 // Called by step segment buffer when computing executing block velocity profile.
-float plan_get_exec_block_exit_speed_sqr();
+FLOAT plan_get_exec_block_exit_speed_sqr();
 
 // Called by main program during planner calculations and step segment buffer during initialization.
-float plan_compute_profile_nominal_speed(plan_block_t *block);
+FLOAT plan_compute_profile_nominal_speed(plan_block_t *block);
 
 // Re-calculates buffered motions profile parameters upon a motion-based override change.
 void plan_update_velocity_profile_parameters();
@@ -143,7 +143,7 @@ uint8_t plan_get_block_buffer_count();
 // Returns the status of the block ring buffer. True, if buffer is full.
 uint8_t plan_check_full_buffer();
 
-void plan_get_planner_mpos(float *target);
+void plan_get_planner_mpos(FLOAT *target);
 
 
 #endif

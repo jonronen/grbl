@@ -34,8 +34,8 @@ typedef struct {
   int32_t position[N_AXIS];          // The planner position of the tool in absolute steps. Kept separate
                                      // from g-code position for movements requiring multiple line motions,
                                      // i.e. arcs, canned cycles, and backlash compensation.
-  float previous_unit_vec[N_AXIS];   // Unit vector of previous path line segment
-  float previous_nominal_speed;  // Nominal speed of previous path line segment
+  FLOAT previous_unit_vec[N_AXIS];   // Unit vector of previous path line segment
+  FLOAT previous_nominal_speed;  // Nominal speed of previous path line segment
 } planner_t;
 static planner_t pl;
 
@@ -134,7 +134,7 @@ static void planner_recalculate()
   // Reverse Pass: Coarsely maximize all possible deceleration curves back-planning from the last
   // block in buffer. Cease planning when the last optimal planned or tail pointer is reached.
   // NOTE: Forward pass will later refine and correct the reverse pass to create an optimal plan.
-  float entry_speed_sqr;
+  FLOAT entry_speed_sqr;
   plan_block_t *next;
   plan_block_t *current = &block_buffer[block_index];
 
@@ -238,7 +238,7 @@ plan_block_t *plan_get_current_block()
 }
 
 
-float plan_get_exec_block_exit_speed_sqr()
+FLOAT plan_get_exec_block_exit_speed_sqr()
 {
   uint8_t block_index = plan_next_block_index(block_buffer_tail);
   if (block_index == block_buffer_head) { return( 0.0 ); }
@@ -256,9 +256,9 @@ uint8_t plan_check_full_buffer()
 
 // Computes and returns block nominal speed based on running condition and override values.
 // NOTE: All system motion commands, such as homing/parking, are not subject to overrides.
-float plan_compute_profile_nominal_speed(plan_block_t *block)
+FLOAT plan_compute_profile_nominal_speed(plan_block_t *block)
 {
-  float nominal_speed = block->programmed_rate;
+  FLOAT nominal_speed = block->programmed_rate;
   if (block->condition & PL_COND_FLAG_RAPID_MOTION) { nominal_speed *= (0.01*sys.r_override); }
   else {
     if (!(block->condition & PL_COND_FLAG_NO_FEED_OVERRIDE)) { nominal_speed *= (0.01*sys.f_override); }
@@ -271,7 +271,7 @@ float plan_compute_profile_nominal_speed(plan_block_t *block)
 
 // Computes and updates the max entry speed (sqr) of the block, based on the minimum of the junction's
 // previous and current nominal speeds and max junction speed.
-static void plan_compute_profile_parameters(plan_block_t *block, float nominal_speed, float prev_nominal_speed)
+static void plan_compute_profile_parameters(plan_block_t *block, FLOAT nominal_speed, FLOAT prev_nominal_speed)
 {
   // Compute the junction maximum entry based on the minimum of the junction speed and neighboring nominal speeds.
   if (nominal_speed > prev_nominal_speed) { block->max_entry_speed_sqr = prev_nominal_speed*prev_nominal_speed; }
@@ -285,8 +285,8 @@ void plan_update_velocity_profile_parameters()
 {
   uint8_t block_index = block_buffer_tail;
   plan_block_t *block;
-  float nominal_speed;
-  float prev_nominal_speed = SOME_LARGE_VALUE; // Set high for first block nominal speed calculation.
+  FLOAT nominal_speed;
+  FLOAT prev_nominal_speed = SOME_LARGE_VALUE; // Set high for first block nominal speed calculation.
   while (block_index != block_buffer_head) {
     block = &block_buffer[block_index];
     nominal_speed = plan_compute_profile_nominal_speed(block);
@@ -312,7 +312,7 @@ void plan_update_velocity_profile_parameters()
    head. It avoids changing the planner state and preserves the buffer to ensure subsequent gcode
    motions are still planned correctly, while the stepper module only points to the block buffer head
    to execute the special system motion. */
-uint8_t plan_buffer_line(float *target, plan_line_data_t *pl_data)
+uint8_t plan_buffer_line(FLOAT *target, plan_line_data_t *pl_data)
 {
   // Prepare and initialize new block. Copy relevant pl_data for block execution.
   plan_block_t *block = &block_buffer[block_buffer_head];
@@ -327,7 +327,7 @@ uint8_t plan_buffer_line(float *target, plan_line_data_t *pl_data)
 
   // Compute and store initial move distance data.
   int32_t target_steps[N_AXIS], position_steps[N_AXIS];
-  float unit_vec[N_AXIS], delta_mm;
+  FLOAT unit_vec[N_AXIS], delta_mm;
   uint8_t idx;
 
   // Copy position data based on type of motion being planned.
@@ -426,8 +426,8 @@ uint8_t plan_buffer_line(float *target, plan_line_data_t *pl_data)
     // memory in the event of a feedrate override changing the nominal speeds of blocks, which can
     // change the overall maximum entry speed conditions of all blocks.
 
-    float junction_unit_vec[N_AXIS];
-    float junction_cos_theta = 0.0;
+    FLOAT junction_unit_vec[N_AXIS];
+    FLOAT junction_cos_theta = 0.0;
     for (idx=0; idx<N_AXIS; idx++) {
       junction_cos_theta -= pl.previous_unit_vec[idx]*unit_vec[idx];
       junction_unit_vec[idx] = unit_vec[idx]-pl.previous_unit_vec[idx];
@@ -443,8 +443,8 @@ uint8_t plan_buffer_line(float *target, plan_line_data_t *pl_data)
         block->max_junction_speed_sqr = SOME_LARGE_VALUE;
       } else {
         convert_delta_vector_to_unit_vector(junction_unit_vec);
-        float junction_acceleration = limit_value_by_axis_maximum(settings.acceleration, junction_unit_vec);
-        float sin_theta_d2 = sqrt(0.5*(1.0-junction_cos_theta)); // Trig half angle identity. Always positive.
+        FLOAT junction_acceleration = limit_value_by_axis_maximum(settings.acceleration, junction_unit_vec);
+        FLOAT sin_theta_d2 = sqrt(0.5*(1.0-junction_cos_theta)); // Trig half angle identity. Always positive.
         block->max_junction_speed_sqr = max( MINIMUM_JUNCTION_SPEED*MINIMUM_JUNCTION_SPEED,
                        (junction_acceleration * settings.junction_deviation * sin_theta_d2)/(1.0-sin_theta_d2) );
       }
@@ -453,7 +453,7 @@ uint8_t plan_buffer_line(float *target, plan_line_data_t *pl_data)
 
   // Block system motion from updating this data to ensure next g-code motion is computed correctly.
   if (!(block->condition & PL_COND_FLAG_SYSTEM_MOTION)) {
-    float nominal_speed = plan_compute_profile_nominal_speed(block);
+    FLOAT nominal_speed = plan_compute_profile_nominal_speed(block);
     plan_compute_profile_parameters(block, nominal_speed, pl.previous_nominal_speed);
     pl.previous_nominal_speed = nominal_speed;
 

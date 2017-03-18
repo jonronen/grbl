@@ -23,7 +23,7 @@
 
 // NOTE: Max line number is defined by the g-code standard to be 99999. It seems to be an
 // arbitrary value, and some GUIs may require more. So we increased it based on a max safe
-// value when converting a float (7.2 digit precision)s to an integer.
+// value when converting a FLOAT (7.2 digit precision)s to an integer.
 #define MAX_LINE_NUMBER 10000000
 #define MAX_TOOL_NUMBER 255 // Limited by max unsigned 8-bit value
 
@@ -108,7 +108,7 @@ uint8_t gc_execute_line(char *line)
   uint8_t word_bit; // Bit-value for assigning tracking variables
   uint8_t char_counter;
   char letter;
-  float value;
+  FLOAT value;
   uint8_t int_value = 0;
   uint16_t mantissa = 0;
   if (gc_parser_flags & GC_PARSER_JOG_MOTION) { char_counter = 3; } // Start parsing after `$J=`
@@ -501,7 +501,7 @@ uint8_t gc_execute_line(char *line)
   // is active. The read pauses the processor temporarily and may cause a rare crash. For
   // future versions on processors with enough memory, all coordinate data should be stored
   // in memory and written to EEPROM only when there is not a cycle active.
-  float block_coord_system[N_AXIS];
+  FLOAT block_coord_system[N_AXIS];
   memcpy(block_coord_system,gc_state.coord_system,sizeof(gc_state.coord_system));
   if ( bit_istrue(command_words,bit(MODAL_GROUP_G12)) ) { // Check if called in block
     if (gc_block.modal.coord_select > N_COORDINATE_SYSTEM) { FAIL(STATUS_GCODE_UNSUPPORTED_COORD_SYS); } // [Greater than N sys]
@@ -683,7 +683,7 @@ uint8_t gc_execute_line(char *line)
           if (!(axis_words & (bit(axis_0)|bit(axis_1)))) { FAIL(STATUS_GCODE_NO_AXIS_WORDS_IN_PLANE); } // [No axis words in plane]
 
           // Calculate the change in position along each selected axis
-          float x,y;
+          FLOAT x,y;
           x = gc_block.values.xyz[axis_0]-gc_state.position[axis_0]; // Delta x between current position and target
           y = gc_block.values.xyz[axis_1]-gc_state.position[axis_1]; // Delta y between current position and target
 
@@ -743,7 +743,7 @@ uint8_t gc_execute_line(char *line)
 
             // First, use h_x2_div_d to compute 4*h^2 to check if it is negative or r is smaller
             // than d. If so, the sqrt of a negative number is complex and error out.
-            float h_x2_div_d = 4.0 * gc_block.values.r*gc_block.values.r - x*x - y*y;
+            FLOAT h_x2_div_d = 4.0 * gc_block.values.r*gc_block.values.r - x*x - y*y;
 
             if (h_x2_div_d < 0) { FAIL(STATUS_GCODE_ARC_RADIUS_ERROR); } // [Arc radius error]
 
@@ -793,13 +793,13 @@ uint8_t gc_execute_line(char *line)
             // Arc radius from center to target
             x -= gc_block.values.ijk[axis_0]; // Delta x between circle center and target
             y -= gc_block.values.ijk[axis_1]; // Delta y between circle center and target
-            float target_r = hypot_f(x,y);
+            FLOAT target_r = hypot_f(x,y);
 
             // Compute arc radius for mc_arc. Defined from current location to center.
             gc_block.values.r = hypot_f(gc_block.values.ijk[axis_0], gc_block.values.ijk[axis_1]);
 
             // Compute difference between current location and target radii for final error-checks.
-            float delta_r = fabs(target_r-gc_block.values.r);
+            FLOAT delta_r = fabs(target_r-gc_block.values.r);
             if (delta_r > 0.005) {
               if (delta_r > 0.5) { FAIL(STATUS_GCODE_INVALID_TARGET); } // [Arc definition error] > 0.5mm
               if (delta_r > (0.001*gc_block.values.r)) { FAIL(STATUS_GCODE_INVALID_TARGET); } // [Arc definition error] > 0.005mm AND 0.1% radius
@@ -996,7 +996,7 @@ uint8_t gc_execute_line(char *line)
   // [15. Coordinate system selection ]:
   if (gc_state.modal.coord_select != gc_block.modal.coord_select) {
     gc_state.modal.coord_select = gc_block.modal.coord_select;
-    memcpy(gc_state.coord_system,block_coord_system,N_AXIS*sizeof(float));
+    memcpy(gc_state.coord_system,block_coord_system,N_AXIS*sizeof(FLOAT));
     system_flag_wco_change();
   }
 
@@ -1014,7 +1014,7 @@ uint8_t gc_execute_line(char *line)
       settings_write_coord_data(coord_select,gc_block.values.ijk);
       // Update system coordinate system if currently active.
       if (gc_state.modal.coord_select == coord_select) {
-        memcpy(gc_state.coord_system,gc_block.values.ijk,N_AXIS*sizeof(float));
+        memcpy(gc_state.coord_system,gc_block.values.ijk,N_AXIS*sizeof(FLOAT));
         system_flag_wco_change();
       }
       break;
@@ -1024,7 +1024,7 @@ uint8_t gc_execute_line(char *line)
       pl_data->condition |= PL_COND_FLAG_RAPID_MOTION; // Set rapid motion condition flag.
       if (axis_command) { mc_line(gc_block.values.xyz, pl_data); }
       mc_line(gc_block.values.ijk, pl_data);
-      memcpy(gc_state.position, gc_block.values.ijk, N_AXIS*sizeof(float));
+      memcpy(gc_state.position, gc_block.values.ijk, N_AXIS*sizeof(FLOAT));
       break;
     case NON_MODAL_SET_HOME_0:
       settings_write_coord_data(SETTING_INDEX_G28,gc_state.position);

@@ -125,12 +125,12 @@ void printInteger(long n)
 }
 
 
-// Convert float to string by immediately converting to a long integer, which contains
-// more digits than a float. Number of decimal places, which are tracked by a counter,
+// Convert FLOAT to string by immediately converting to a long integer, which contains
+// more digits than a FLOAT. Number of decimal places, which are tracked by a counter,
 // may be set by the user. The integer is then efficiently converted to a string.
 // NOTE: AVR '%' and '/' integer operations are very efficient. Bitshifting speed-up
 // techniques are actually just slightly slower. Found this out the hard way.
-void printFloat(float n, uint8_t decimal_places)
+void printFloat(FLOAT n, uint8_t decimal_places)
 {
   if (n < 0) {
     serial_write('-');
@@ -172,7 +172,7 @@ void printFloat(float n, uint8_t decimal_places)
 // in the config.h.
 //  - CoordValue: Handles all position or coordinate values in inches or mm reporting.
 //  - RateValue: Handles feed rate and current velocity in inches or mm reporting.
-void printFloat_CoordValue(float n) {
+void printFloat_CoordValue(FLOAT n) {
   if (bit_istrue(settings.flags,BITFLAG_REPORT_INCHES)) {
     printFloat(n*INCH_PER_MM,N_DECIMAL_COORDVALUE_INCH);
   } else {
@@ -180,7 +180,7 @@ void printFloat_CoordValue(float n) {
   }
 }
 
-void printFloat_RateValue(float n) {
+void printFloat_RateValue(FLOAT n) {
   if (bit_istrue(settings.flags,BITFLAG_REPORT_INCHES)) {
     printFloat(n*INCH_PER_MM,N_DECIMAL_RATEVALUE_INCH);
   } else {

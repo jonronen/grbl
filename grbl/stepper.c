@@ -140,29 +140,29 @@ typedef struct {
   uint8_t st_block_index;  // Index of stepper common data block being prepped
   uint8_t recalculate_flag;
 
-  float dt_remainder;
-  float steps_remaining;
-  float step_per_mm;
-  float req_mm_increment;
+  FLOAT dt_remainder;
+  FLOAT steps_remaining;
+  FLOAT step_per_mm;
+  FLOAT req_mm_increment;
 
   #ifdef PARKING_ENABLE
     uint8_t last_st_block_index;
-    float last_steps_remaining;
-    float last_step_per_mm;
-    float last_dt_remainder;
+    FLOAT last_steps_remaining;
+    FLOAT last_step_per_mm;
+    FLOAT last_dt_remainder;
   #endif
 
   uint8_t ramp_type;      // Current segment ramp state
-  float mm_complete;      // End of velocity profile from end of current planner block in (mm).
+  FLOAT mm_complete;      // End of velocity profile from end of current planner block in (mm).
                           // NOTE: This value must coincide with a step(no mantissa) when converted.
-  float current_speed;    // Current speed at the end of the segment buffer (mm/min)
-  float maximum_speed;    // Maximum speed of executing block. Not always nominal speed. (mm/min)
-  float exit_speed;       // Exit speed of executing block (mm/min)
-  float accelerate_until; // Acceleration ramp end measured from end of block (mm)
-  float decelerate_after; // Deceleration ramp start measured from end of block (mm)
+  FLOAT current_speed;    // Current speed at the end of the segment buffer (mm/min)
+  FLOAT maximum_speed;    // Maximum speed of executing block. Not always nominal speed. (mm/min)
+  FLOAT exit_speed;       // Exit speed of executing block (mm/min)
+  FLOAT accelerate_until; // Acceleration ramp end measured from end of block (mm)
+  FLOAT decelerate_after; // Deceleration ramp start measured from end of block (mm)
 
   #ifdef VARIABLE_SPINDLE
-    float inv_rate;    // Used by PWM laser mode to speed up segment calculations.
+    FLOAT inv_rate;    // Used by PWM laser mode to speed up segment calculations.
     uint8_t current_spindle_pwm; 
   #endif
 } st_prep_t;
@@ -649,7 +649,7 @@ void st_prep_buffer()
         #endif
 
         // Initialize segment buffer data for generating the segments.
-        prep.steps_remaining = (float)pl_block->step_event_count;
+        prep.steps_remaining = (FLOAT)pl_block->step_event_count;
         prep.step_per_mm = prep.steps_remaining/pl_block->millimeters;
         prep.req_mm_increment = REQ_MM_INCREMENT_SCALAR/prep.step_per_mm;
         prep.dt_remainder = 0.0; // Reset for new segment block
@@ -684,13 +684,13 @@ void st_prep_buffer()
 			 hold, override the planner velocities and decelerate to the target exit speed.
 			*/
 			prep.mm_complete = 0.0; // Default velocity profile complete at 0.0mm from end of block.
-			float inv_2_accel = 0.5/pl_block->acceleration;
+			FLOAT inv_2_accel = 0.5/pl_block->acceleration;
 			if (sys.step_control & STEP_CONTROL_EXECUTE_HOLD) { // [Forced Deceleration to Zero Velocity]
 				// Compute velocity profile parameters for a feed hold in-progress. This profile overrides
 				// the planner block profile, enforcing a deceleration to zero speed.
 				prep.ramp_type = RAMP_DECEL;
 				// Compute decelerate distance relative to end of block.
-				float decel_dist = pl_block->millimeters - inv_2_accel*pl_block->entry_speed_sqr;
+				FLOAT decel_dist = pl_block->millimeters - inv_2_accel*pl_block->entry_speed_sqr;
 				if (decel_dist < 0.0) {
 					// Deceleration through entire planner block. End of feed hold is not in this block.
 					prep.exit_speed = sqrt(pl_block->entry_speed_sqr-2*pl_block->acceleration*pl_block->millimeters);
@@ -703,8 +703,8 @@ void st_prep_buffer()
 				prep.ramp_type = RAMP_ACCEL; // Initialize as acceleration ramp.
 				prep.accelerate_until = pl_block->millimeters;
 
-				float exit_speed_sqr;
-				float nominal_speed;
+				FLOAT exit_speed_sqr;
+				FLOAT nominal_speed;
         if (sys.step_control & STEP_CONTROL_EXECUTE_SYS_MOTION) {
           prep.exit_speed = exit_speed_sqr = 0.0; // Enforce stop at end of system motion.
         } else {
@@ -713,8 +713,8 @@ void st_prep_buffer()
         }
 
         nominal_speed = plan_compute_profile_nominal_speed(pl_block);
-				float nominal_speed_sqr = nominal_speed*nominal_speed;
-				float intersect_distance =
+				FLOAT nominal_speed_sqr = nominal_speed*nominal_speed;
+				FLOAT intersect_distance =
 								0.5*(pl_block->millimeters+inv_2_accel*(pl_block->entry_speed_sqr-exit_speed_sqr));
 
         if (pl_block->entry_speed_sqr > nominal_speed_sqr) { // Only occurs during override reductions.
@@ -793,13 +793,13 @@ void st_prep_buffer()
       the end of planner block (typical) or mid-block at the end of a forced deceleration,
       such as from a feed hold.
     */
-    float dt_max = DT_SEGMENT; // Maximum segment time
-    float dt = 0.0; // Initialize segment time
-    float time_var = dt_max; // Time worker variable
-    float mm_var; // mm-Distance worker variable
-    float speed_var; // Speed worker variable
-    float mm_remaining = pl_block->millimeters; // New segment distance from end of block.
-    float minimum_mm = mm_remaining-prep.req_mm_increment; // Guarantee at least one step.
+    FLOAT dt_max = DT_SEGMENT; // Maximum segment time
+    FLOAT dt = 0.0; // Initialize segment time
+    FLOAT time_var = dt_max; // Time worker variable
+    FLOAT mm_var; // mm-Distance worker variable
+    FLOAT speed_var; // Speed worker variable
+    FLOAT mm_remaining = pl_block->millimeters; // New segment distance from end of block.
+    FLOAT minimum_mm = mm_remaining-prep.req_mm_increment; // Guarantee at least one step.
     if (minimum_mm < 0.0) { minimum_mm = 0.0; }
 
     do {
@@ -885,7 +885,7 @@ void st_prep_buffer()
       
       if (st_prep_block->is_pwm_rate_adjusted || (sys.step_control & STEP_CONTROL_UPDATE_SPINDLE_PWM)) {
         if (pl_block->condition & (PL_COND_FLAG_SPINDLE_CW | PL_COND_FLAG_SPINDLE_CCW)) {
-          float rpm = pl_block->spindle_speed;
+          FLOAT rpm = pl_block->spindle_speed;
           // NOTE: Feed and rapid overrides are independent of PWM value and do not alter laser power/rate.        
           if (st_prep_block->is_pwm_rate_adjusted) { rpm *= (prep.current_speed * prep.inv_rate); }
           // If current_speed is zero, then may need to be rpm_min*(100/MAX_SPINDLE_SPEED_OVERRIDE)
@@ -911,9 +911,9 @@ void st_prep_buffer()
        Fortunately, this scenario is highly unlikely and unrealistic in CNC machines
        supported by Grbl (i.e. exceeding 10 meters axis travel at 200 step/mm).
     */
-    float step_dist_remaining = prep.step_per_mm*mm_remaining; // Convert mm_remaining to steps
-    float n_steps_remaining = ceil(step_dist_remaining); // Round-up current steps remaining
-    float last_n_steps_remaining = ceil(prep.steps_remaining); // Round-up last steps remaining
+    FLOAT step_dist_remaining = prep.step_per_mm*mm_remaining; // Convert mm_remaining to steps
+    FLOAT n_steps_remaining = ceil(step_dist_remaining); // Round-up current steps remaining
+    FLOAT last_n_steps_remaining = ceil(prep.steps_remaining); // Round-up last steps remaining
     prep_segment->n_step = last_n_steps_remaining-n_steps_remaining; // Compute number of steps to execute.
 
     // Bail if we are at the end of a feed hold and don't have a step to execute.
@@ -938,7 +938,7 @@ void st_prep_buffer()
     // typically very small and do not adversely effect performance, but ensures that Grbl
     // outputs the exact acceleration and velocity profiles as computed by the planner.
     dt += prep.dt_remainder; // Apply previous segment partial step execute time
-    float inv_rate = dt/(last_n_steps_remaining - step_dist_remaining); // Compute adjusted step rate inverse
+    FLOAT inv_rate = dt/(last_n_steps_remaining - step_dist_remaining); // Compute adjusted step rate inverse
 
     // Compute CPU cycles per step for the prepped segment.
     uint32_t cycles = ceil( (TICKS_PER_MICROSECOND*1000000*60)*inv_rate ); // (cycles/step)
@@ -1014,7 +1014,7 @@ void st_prep_buffer()
 // however is not exactly the current speed, but the speed computed in the last step segment
 // in the segment buffer. It will always be behind by up to the number of segment blocks (-1)
 // divided by the ACCELERATION TICKS PER SECOND in seconds.
-float st_get_realtime_rate()
+FLOAT st_get_realtime_rate()
 {
   if (sys.state & (STATE_CYCLE | STATE_HOMING | STATE_HOLD | STATE_JOG | STATE_SAFETY_DOOR)){
     return prep.current_speed;
