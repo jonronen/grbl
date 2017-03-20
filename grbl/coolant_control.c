@@ -23,9 +23,10 @@
 
 void coolant_init()
 {
-  COOLANT_FLOOD_DDR |= (1 << COOLANT_FLOOD_BIT); // Configure as output pin
+  // Configure as output pin
+  GPIO_SET_OUTPUTS(COOLANT_FLOOD_DDR, (1 << COOLANT_FLOOD_BIT));
   #ifdef ENABLE_M7
-    COOLANT_MIST_DDR |= (1 << COOLANT_MIST_BIT);
+    GPIO_SET_OUTPUTS(COOLANT_MIST_DDR, (1 << COOLANT_MIST_BIT));
   #endif
   coolant_stop();
 }

@@ -1,8 +1,8 @@
 /*
-  grbl_platform.h - platform-specific include files
+  pwm_hal.h - PWM hardware abstraction layer
   Part of Grbl
 
-  Copyright (c) 2017-2017 Jon Ronen-Drori <jon_ronen@yahoo.com>
+  Copyright (c) 2017 Jon Ronen-Drori <jon_ronen@yahoo.com>
 
   Grbl is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -18,23 +18,16 @@
   along with Grbl.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef grbl_platform_h
-#define grbl_platform_h
+
+#ifndef pwm_hal_h
+#define pwm_hal_h
 
 
-#define PSTR(x) x
-#define pgm_read_byte_near(x) *(x)
-
-#define FLOAT double
-
-
-#include "platform.h"
-#include "plic/plic_driver.h"
-#include "encoding.h"
-#include "stdatomic.h"
-#include "pwm_hal.h"
+void pwm_hal_setup (uint32_t pwm_index, uint32_t scaling);
+void pwm_hal_disable_output (uint32_t pwm_index);
+void pwm_hal_enable_output (uint32_t pwm_index);
+int pwm_hal_is_enabled (uint32_t pwm_index);
 
 
-#endif
-
+#endif // pwm_hal_h
 
