@@ -2,6 +2,7 @@
   stepper.c - stepper motor driver: executes motion plans using stepper motors
   Part of Grbl
 
+  Copyright (c) 2017 Jon Ronen-Drori <jon_ronen@yahoo.com>
   Copyright (c) 2011-2016 Sungeun K. Jeon for Gnea Research LLC
   Copyright (c) 2009-2011 Simen Svale Skogsrud
 
@@ -231,7 +232,11 @@ void st_wake_up()
   #endif
 
   // Enable Stepper Driver Interrupt
+#ifdef AVR
   TIMSK1 |= (1<<OCIE1A);
+#else
+  pwm1_interrupt_enable ();
+#endif
 }
 
 
@@ -239,8 +244,12 @@ void st_wake_up()
 void st_go_idle()
 {
   // Disable Stepper Driver Interrupt. Allow Stepper Port Reset Interrupt to finish, if active.
+#ifdef AVR
   TIMSK1 &= ~(1<<OCIE1A); // Disable Timer1 interrupt
   TCCR1B = (TCCR1B & ~((1<<CS12) | (1<<CS11))) | (1<<CS10); // Reset clock to no prescaling.
+#else
+  pwm1_interrupt_disable ();
+#endif
   busy = false;
 
   // Set stepper driver idle state, disabled or enabled, depending on settings and circumstances.
@@ -305,7 +314,11 @@ void st_go_idle()
 // TODO: Replace direct updating of the int32 position counters in the ISR somehow. Perhaps use smaller
 // int8 variables and update position counters only when a segment completes. This can get complicated
 // with probing and homing cycles that require true real-time positions.
+#ifdef AVR
 ISR(TIMER1_COMPA_vect)
+#else
+static void pwm1_compare_interrupt ()
+#endif
 {
   if (busy) { return; } // The busy-flag is used to avoid reentering this interrupt
 
@@ -321,8 +334,14 @@ ISR(TIMER1_COMPA_vect)
 
   // Enable step pulse reset timer so that The Stepper Port Reset Interrupt can reset the signal after
   // exactly settings.pulse_microseconds microseconds, independent of the main Timer1 prescaler.
+#ifdef AVR
   TCNT0 = st.step_pulse_time; // Reload Timer0 counter
   TCCR0B = (1<<CS01); // Begin Timer0. Full speed, 1/8 prescaler
+#else
+  pwm2_set_prescaler (2);
+  pwm2_set_comparator (-st.step_pulse_time);
+  pwm2_start ();
+#endif
 
   busy = true;
   sei(); // Re-enable interrupts to allow Stepper Port Reset Interrupt to fire on-time.
@@ -337,11 +356,19 @@ ISR(TIMER1_COMPA_vect)
 
       #ifndef ADAPTIVE_MULTI_AXIS_STEP_SMOOTHING
         // With AMASS is disabled, set timer prescaler for segments with slow step frequencies (< 250Hz).
+#ifdef AVR
         TCCR1B = (TCCR1B & ~(0x07<<CS10)) | (st.exec_segment->prescaler<<CS10);
+#else
+        pwm1_set_prescaler (st.exec_segment->prescaler);
+#endif
       #endif
 
       // Initialize step segment timing per step and load number of steps to execute.
+#ifdef AVR
       OCR1A = st.exec_segment->cycles_per_tick;
+#else
+      pwm1_set_comparator (st.exec_segment->cycles_per_tick);
+#endif
       st.step_count = st.exec_segment->n_step; // NOTE: Can sometimes be zero when moving slow.
       // If the new segment starts a new planner block, initialize stepper variables and counters.
       // NOTE: When the segment data index changes, this indicates a new planner block.
@@ -446,12 +473,21 @@ ISR(TIMER1_COMPA_vect)
 // This interrupt is enabled by ISR_TIMER1_COMPAREA when it sets the motor port bits to execute
 // a step. This ISR resets the motor port after a short period (settings.pulse_microseconds)
 // completing one step cycle.
+#ifdef AVR
 ISR(TIMER0_OVF_vect)
+#else
+static void pwm2_compare_interrupt ()
+#endif
 {
   // Reset stepping pins (leave the direction pins)
   STEP_PORT = (STEP_PORT & ~STEP_MASK) | (step_port_invert_mask & STEP_MASK);
+#ifdef AVR
   TCCR0B = 0; // Disable Timer0 to prevent re-entering this interrupt when it's not needed.
+#else
+  pwm2_disable ();
+#endif
 }
+
 #ifdef STEP_PULSE_DELAY
   // This interrupt is used only when STEP_PULSE_DELAY is enabled. Here, the step pulse is
   // initiated after the STEP_PULSE_DELAY time period has elapsed. The ISR TIMER2_OVF interrupt
@@ -503,6 +539,12 @@ void st_reset()
 }
 
 
+#ifndef AVR
+static void pwm1_compare_interrupt ();
+static void pwm2_compare_interrupt ();
+#endif
+
+
 // Initialize and start the stepper motor subsystem
 void stepper_init()
 {
@@ -512,14 +554,21 @@ void stepper_init()
   GPIO_SET_OUTPUTS(DIRECTION_DDR, DIRECTION_MASK);
 
   // Configure Timer 1: Stepper Driver Interrupt
+#ifdef AVR
   TCCR1B &= ~(1<<WGM13); // waveform generation = 0100 = CTC
   TCCR1B |=  (1<<WGM12);
   TCCR1A &= ~((1<<WGM11) | (1<<WGM10));
   TCCR1A &= ~((1<<COM1A1) | (1<<COM1A0) | (1<<COM1B1) | (1<<COM1B0)); // Disconnect OC1 output
   // TCCR1B = (TCCR1B & ~((1<<CS12) | (1<<CS11))) | (1<<CS10); // Set in st_go_idle().
   // TIMSK1 &= ~(1<<OCIE1A);  // Set in st_go_idle().
+#else
+  pwm1_timer_init ();
+  pwm1_interrupt_register (pwm1_compare_interrupt);
+#endif
+
 
   // Configure Timer 0: Stepper Port Reset Interrupt
+#ifdef AVR
   TIMSK0 &= ~((1<<OCIE0B) | (1<<OCIE0A) | (1<<TOIE0)); // Disconnect OC0 outputs and OVF interrupt.
   TCCR0A = 0; // Normal operation
   TCCR0B = 0; // Disable Timer0 until needed
@@ -527,6 +576,11 @@ void stepper_init()
   #ifdef STEP_PULSE_DELAY
     TIMSK0 |= (1<<OCIE0A); // Enable Timer0 Compare Match A interrupt
   #endif
+#else
+  pwm2_timer_init ();
+  pwm2_interrupt_register (pwm2_compare_interrupt);
+#endif
+
 }
 
 

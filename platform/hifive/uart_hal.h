@@ -1,8 +1,8 @@
 /*
-  grbl_platform.h - platform-specific include files
+  uart_hal.h - UART hardware abstraction layer
   Part of Grbl
 
-  Copyright (c) 2017-2017 Jon Ronen-Drori <jon_ronen@yahoo.com>
+  Copyright (c) 2017 Jon Ronen-Drori <jon_ronen@yahoo.com>
 
   Grbl is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -18,24 +18,20 @@
   along with Grbl.  If not, see <http://www.gnu.org/licenses/>.
 */
 
-#ifndef grbl_platform_h
-#define grbl_platform_h
+
+#ifndef uart_hal_h
+#define uart_hal_h
+
+typedef void (*callback_fn_t) (void);
+
+void uart_hal_setup (uint32_t baudrate);
+void uart_hal_disable_output_irq ();
+void uart_hal_enable_output_irq ();
+uint8_t uart_hal_get_byte ();
+void uart_hal_send_byte (uint8_t data);
+void uart_hal_register_tx_interrupt (callback_fn_t tx_handler);
+void uart_hal_register_rx_interrupt (callback_fn_t rx_handler);
 
 
-#define PSTR(x) x
-#define pgm_read_byte_near(x) *(x)
-
-#define FLOAT double
-
-
-#include "platform.h"
-#include "plic/plic_driver.h"
-#include "encoding.h"
-#include "stdatomic.h"
-#include "pwm_hal.h"
-#include "uart_hal.h"
-
-
-#endif
-
+#endif // uart_hal_h
 

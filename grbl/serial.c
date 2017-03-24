@@ -2,6 +2,7 @@
   serial.c - Low level functions for sending and recieving bytes via the serial port
   Part of Grbl
 
+  Copyright (c) 2017 Jon Ronen-Drori <jon_ronen@yahoo.com>
   Copyright (c) 2011-2016 Sungeun K. Jeon for Gnea Research LLC
   Copyright (c) 2009-2011 Simen Svale Skogsrud
 
@@ -62,8 +63,15 @@ uint8_t serial_get_tx_buffer_count()
 }
 
 
+#ifndef AVR
+void handle_tx_empty ();
+void handle_rx_data ();
+#endif
+
+
 void serial_init()
 {
+#ifdef AVR
   // Set baud rate
   #if BAUD_RATE < 57600
     uint16_t UBRR0_value = ((F_CPU / (8L * BAUD_RATE)) - 1)/2 ;
@@ -79,6 +87,11 @@ void serial_init()
   UCSR0B |= (1<<RXEN0 | 1<<TXEN0 | 1<<RXCIE0);
 
   // defaults to 8-bit, no parity, 1 stop bit
+#else
+  uart_hal_setup (BAUD_RATE);
+  uart_hal_register_tx_interrupt (handle_tx_empty);
+  uart_hal_register_rx_interrupt (handle_rx_data);
+#endif
 }
 
 
@@ -99,17 +112,29 @@ void serial_write(uint8_t data) {
   serial_tx_buffer_head = next_head;
 
   // Enable Data Register Empty Interrupt to make sure tx-streaming is running
+#ifdef AVR
   UCSR0B |=  (1 << UDRIE0);
+#else
+  uart_hal_enable_output_irq ();
+#endif
 }
 
 
 // Data Register Empty Interrupt handler
+#ifdef AVR
 ISR(SERIAL_UDRE)
+#else
+void handle_tx_empty ()
+#endif
 {
   uint8_t tail = serial_tx_buffer_tail; // Temporary serial_tx_buffer_tail (to optimize for volatile)
 
   // Send a byte from the buffer
+#ifdef AVR
   UDR0 = serial_tx_buffer[tail];
+#else
+  uart_hal_send_byte (serial_tx_buffer[tail]);
+#endif
 
   // Update tail position
   tail++;
@@ -118,7 +143,13 @@ ISR(SERIAL_UDRE)
   serial_tx_buffer_tail = tail;
 
   // Turn off Data Register Empty Interrupt to stop tx-streaming if this concludes the transfer
-  if (tail == serial_tx_buffer_head) { UCSR0B &= ~(1 << UDRIE0); }
+  if (tail == serial_tx_buffer_head) {
+#ifdef AVR
+    UCSR0B &= ~(1 << UDRIE0);
+#else
+    uart_hal_disable_output_irq ();
+#endif
+  }
 }
 
 
@@ -140,9 +171,17 @@ uint8_t serial_read()
 }
 
 
+#ifdef AVR
 ISR(SERIAL_RX)
+#else
+void handle_rx_data ()
+#endif
 {
+#ifdef AVR
   uint8_t data = UDR0;
+#else
+  uint8_t data = uart_hal_get_byte ();
+#endif
   uint8_t next_head;
 
   // Pick off realtime command characters directly from the serial stream. These characters are

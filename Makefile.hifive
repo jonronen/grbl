@@ -27,9 +27,12 @@ BSP_BASE = /projects/freedom-e-sdk/bsp
 SOURCEDIR = grbl
 
 SOURCES += main.c motion_control.c gcode.c spindle_control.c coolant_control.c
-SOURCES += serial.c protocol.c stepper.c eeprom.c settings.c planner.c
+SOURCES += serial.c protocol.c stepper.c settings.c planner.c
 SOURCES += nuts_bolts.c limits.c jog.c print.c probe.c report.c system.c
 C_SRCS += $(addprefix $(SOURCEDIR)/,$(SOURCES))
+
+C_SRCS += platform/hifive/uart_hal.c
+C_SRCS += platform/hifive/eeprom_emulation.c 
 
 TARGET = grbl_program
 CFLAGS += -O2 -fno-builtin-printf -Iplatform/hifive -DUSE_PLIC -DUSE_M_TIME
