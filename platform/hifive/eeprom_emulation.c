@@ -1,4 +1,6 @@
 #include "eeprom.h"
+#include <stdint.h>
+#include <string.h>
 
 
 #define EEPROM_MAX_SIZE 1024

@@ -235,7 +235,7 @@ void st_wake_up()
 #ifdef AVR
   TIMSK1 |= (1<<OCIE1A);
 #else
-  pwm1_interrupt_enable ();
+  pwm_hal_start (STEPPERS_PWM_NUMBER);
 #endif
 }
 
@@ -248,7 +248,7 @@ void st_go_idle()
   TIMSK1 &= ~(1<<OCIE1A); // Disable Timer1 interrupt
   TCCR1B = (TCCR1B & ~((1<<CS12) | (1<<CS11))) | (1<<CS10); // Reset clock to no prescaling.
 #else
-  pwm1_interrupt_disable ();
+  pwm_hal_disable (STEPPERS_PWM_NUMBER);
 #endif
   busy = false;
 
@@ -338,9 +338,9 @@ static void pwm1_compare_interrupt ()
   TCNT0 = st.step_pulse_time; // Reload Timer0 counter
   TCCR0B = (1<<CS01); // Begin Timer0. Full speed, 1/8 prescaler
 #else
-  pwm2_set_prescaler (2);
-  pwm2_set_comparator (-st.step_pulse_time);
-  pwm2_start ();
+  pwm_hal_set_prescaler (PULSE_OFF_PWM_NUMBER, PWM_PRESCALER_8);
+  pwm_hal_set_comparator (PULSE_OFF_PWM_NUMBER, -st.step_pulse_time);
+  pwm_hal_start (PULSE_OFF_PWM_NUMBER);
 #endif
 
   busy = true;
@@ -359,7 +359,7 @@ static void pwm1_compare_interrupt ()
 #ifdef AVR
         TCCR1B = (TCCR1B & ~(0x07<<CS10)) | (st.exec_segment->prescaler<<CS10);
 #else
-        pwm1_set_prescaler (st.exec_segment->prescaler);
+        pwm_hal_set_prescaler (STEPPERS_PWM_NUMBER, st.exec_segment->prescaler);
 #endif
       #endif
 
@@ -367,7 +367,9 @@ static void pwm1_compare_interrupt ()
 #ifdef AVR
       OCR1A = st.exec_segment->cycles_per_tick;
 #else
-      pwm1_set_comparator (st.exec_segment->cycles_per_tick);
+      pwm_hal_set_comparator (
+        STEPPERS_PWM_NUMBER, st.exec_segment->cycles_per_tick
+      );
 #endif
       st.step_count = st.exec_segment->n_step; // NOTE: Can sometimes be zero when moving slow.
       // If the new segment starts a new planner block, initialize stepper variables and counters.
@@ -484,7 +486,7 @@ static void pwm2_compare_interrupt ()
 #ifdef AVR
   TCCR0B = 0; // Disable Timer0 to prevent re-entering this interrupt when it's not needed.
 #else
-  pwm2_disable ();
+  pwm_hal_disable (PULSE_OFF_PWM_NUMBER);
 #endif
 }
 
@@ -562,8 +564,8 @@ void stepper_init()
   // TCCR1B = (TCCR1B & ~((1<<CS12) | (1<<CS11))) | (1<<CS10); // Set in st_go_idle().
   // TIMSK1 &= ~(1<<OCIE1A);  // Set in st_go_idle().
 #else
-  pwm1_timer_init ();
-  pwm1_interrupt_register (pwm1_compare_interrupt);
+  pwm_hal_timer_init (STEPPERS_PWM_NUMBER);
+  pwm_hal_interrupt_register (STEPPERS_PWM_NUMBER, pwm1_compare_interrupt);
 #endif
 
 
@@ -577,8 +579,8 @@ void stepper_init()
     TIMSK0 |= (1<<OCIE0A); // Enable Timer0 Compare Match A interrupt
   #endif
 #else
-  pwm2_timer_init ();
-  pwm2_interrupt_register (pwm2_compare_interrupt);
+  pwm_hal_timer_init (PULSE_OFF_PWM_NUMBER);
+  pwm_hal_interrupt_register (PULSE_OFF_PWM_NUMBER, pwm2_compare_interrupt);
 #endif
 
 }

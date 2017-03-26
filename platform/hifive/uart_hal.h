@@ -22,6 +22,10 @@
 #ifndef uart_hal_h
 #define uart_hal_h
 
+
+#include <stdint.h>
+
+
 typedef void (*callback_fn_t) (void);
 
 void uart_hal_setup (uint32_t baudrate);

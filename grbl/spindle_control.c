@@ -81,7 +81,7 @@ uint8_t spindle_get_state()
       #ifdef AVR
       if (SPINDLE_TCCRA_REGISTER & (1<<SPINDLE_COMB_BIT)) {
       #else
-      if (pwm_hal_is_enabled (SPINDLE_PWM_NUMBER)) {
+      if (pwm_hal_is_output_enabled (SPINDLE_PWM_NUMBER)) {
       #endif
         if (SPINDLE_DIRECTION_PORT & (1<<SPINDLE_DIRECTION_BIT)) { return(SPINDLE_STATE_CCW); }
         else { return(SPINDLE_STATE_CW); }
@@ -111,7 +111,7 @@ void spindle_stop()
     #ifdef AVR
       SPINDLE_TCCRA_REGISTER &= ~(1<<SPINDLE_COMB_BIT);
     #else
-      pwm_hal_disable_output (SPINDLE_PWM_NUMBER);
+      pwm_hal_output_disable (SPINDLE_PWM_NUMBER);
     #endif
     #ifdef USE_SPINDLE_DIR_AS_ENABLE_PIN
       #ifdef INVERT_SPINDLE_ENABLE_PIN
@@ -144,7 +144,7 @@ void spindle_stop()
         #ifdef AVR
           SPINDLE_TCCRA_REGISTER |= (1<<SPINDLE_COMB_BIT);
         #else
-          pwm_hal_enable_output (SPINDLE_PWM_NUMBER);
+          pwm_hal_output_enable (SPINDLE_PWM_NUMBER);
         #endif
         #ifdef INVERT_SPINDLE_ENABLE_PIN
           SPINDLE_ENABLE_PORT &= ~(1<<SPINDLE_ENABLE_BIT);
@@ -158,14 +158,14 @@ void spindle_stop()
         #ifdef AVR
           SPINDLE_TCCRA_REGISTER &= ~(1<<SPINDLE_COMB_BIT);
         #else
-          pwm_hal_disable_output (SPINDLE_PWM_NUMBER);
+          pwm_hal_output_disable (SPINDLE_PWM_NUMBER);
         #endif
       } else {
         // Ensure PWM output is enabled.
         #ifdef AVR
           SPINDLE_TCCRA_REGISTER |= (1<<SPINDLE_COMB_BIT);
         #else
-          pwm_hal_enable_output (SPINDLE_PWM_NUMBER);
+          pwm_hal_output_enable (SPINDLE_PWM_NUMBER);
         #endif
       }
     #endif

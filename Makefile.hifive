@@ -35,7 +35,8 @@ C_SRCS += platform/hifive/uart_hal.c
 C_SRCS += platform/hifive/eeprom_emulation.c 
 
 TARGET = grbl_program
-CFLAGS += -O2 -fno-builtin-printf -Iplatform/hifive -DUSE_PLIC -DUSE_M_TIME
+CFLAGS += -O2 -fno-builtin-printf -Iplatform/hifive -Igrbl
+CFLAGS += -DUSE_PLIC -DUSE_M_TIME
 LDFLAGS += -lm
 
 #C_SRCS += main.c gcode.c motion_control.c nuts_bolts.c planner.c print.c

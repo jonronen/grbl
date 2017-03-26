@@ -55,6 +55,8 @@
 #define STEPPERS_DISABLE_PORT   GPIO_REG(GPIO_OUTPUT_VAL)
 #define STEPPERS_DISABLE_BIT    0  // Uno Digital Pin 8
 #define STEPPERS_DISABLE_MASK   (1<<STEPPERS_DISABLE_BIT)
+#define STEPPERS_PWM_NUMBER     1
+#define PULSE_OFF_PWM_NUMBER    2
 
 // Define homing/hard limit switch input pins and limit interrupt vectors.
 // NOTE: All limit bit pins must be on the same port, but not on a port with other input pins (CONTROL).
@@ -128,7 +130,7 @@
 #define SPINDLE_TCCRB_REGISTER	  TCCR2B
 #define SPINDLE_OCR_REGISTER      PWM0_REG(PWM_CMP3)
 #define SPINDLE_COMB_BIT	        COM2A1
-#define SPINDLE_PWM_PRESCALER 64
+#define SPINDLE_PWM_PRESCALER PWM_PRESCALER_64
 #define SPINDLE_PWM_NUMBER 0
 
 // Prescaled, 8-bit Fast PWM mode.

@@ -20,6 +20,8 @@
 
 
 #include "uart_hal.h"
+#include <platform.h>
+#include <stdint.h>
 
 
 extern unsigned long get_cpu_freq ();
@@ -47,10 +49,10 @@ uint8_t uart_hal_get_byte () {
 void uart_hal_send_byte (uint8_t data) {
 }
 
-void uart_hal_register_tx_interrupt (void (*)(void) tx_handler) {
+void uart_hal_register_tx_interrupt (callback_fn_t tx_handler) {
 }
 
-void uart_hal_register_rx_interrupt (void (*)(void) rx_handler) {
+void uart_hal_register_rx_interrupt (callback_fn_t rx_handler) {
 }
 
 
