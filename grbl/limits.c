@@ -32,12 +32,24 @@
 
 void limits_init()
 {
+#ifdef AVR
   LIMIT_DDR &= ~(LIMIT_MASK); // Set as input pins
+#else
+  GPIO_SET_INPUTS(LIMIT_DDR, LIMIT_MASK);
+#endif
 
   #ifdef DISABLE_LIMIT_PIN_PULL_UP
+    #ifdef AVR
     LIMIT_PORT &= ~(LIMIT_MASK); // Normal low operation. Requires external pull-down.
+    #else
+    GPIO_DISABLE_PULLUPS(LIMIT_PORT, LIMIT_MASK);
+    #endif
   #else
+    #ifdef AVR
     LIMIT_PORT |= (LIMIT_MASK);  // Enable internal pull-up resistors. Normal high operation.
+    #else
+    GPIO_SET_PULLUPS(LIMIT_PORT, LIMIT_MASK);
+    #endif
   #endif
 
   if (bit_istrue(settings.flags,BITFLAG_HARD_LIMIT_ENABLE)) {

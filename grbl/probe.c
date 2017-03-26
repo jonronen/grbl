@@ -28,11 +28,24 @@ uint8_t probe_invert_mask;
 // Probe pin initialization routine.
 void probe_init()
 {
+#ifdef AVR
   PROBE_DDR &= ~(PROBE_MASK); // Configure as input pins
+#else
+  GPIO_SET_INPUTS(PROBE_DDR, PROBE_MASK);
+#endif
+
   #ifdef DISABLE_PROBE_PIN_PULL_UP
+    #ifdef AVR
     PROBE_PORT &= ~(PROBE_MASK); // Normal low operation. Requires external pull-down.
+    #else
+    GPIO_DISABLE_PULLUPS(PROBE_PORT, PROBE_MASK);
+    #endif
   #else
+    #ifdef AVR
     PROBE_PORT |= PROBE_MASK;    // Enable internal pull-up resistors. Normal high operation.
+    #else
+    GPIO_SET_PULLUPS(PROBE_PORT, PROBE_MASK);
+    #endif
   #endif
   probe_configure_invert_mask(false); // Initialize invert mask.
 }

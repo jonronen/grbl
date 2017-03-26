@@ -23,11 +23,23 @@
 
 void system_init()
 {
+#ifdef AVR
   CONTROL_DDR &= ~(CONTROL_MASK); // Configure as input pins
+#else
+  GPIO_SET_INPUTS(CONTROL_DDR, CONTROL_MASK);
+#endif
   #ifdef DISABLE_CONTROL_PIN_PULL_UP
+    #ifdef AVR
     CONTROL_PORT &= ~(CONTROL_MASK); // Normal low operation. Requires external pull-down.
+    #else
+    GPIO_DISABLE_PULLUPS(CONTROL_PORT, CONTROL_MASK);
+    #endif
   #else
+    #ifdef AVR
     CONTROL_PORT |= CONTROL_MASK;   // Enable internal pull-up resistors. Normal high operation.
+    #else
+    GPIO_SET_PULLUPS(CONTROL_PORT, CONTROL_MASK);
+    #endif
   #endif
   CONTROL_PCMSK |= CONTROL_MASK;  // Enable specific pins of the Pin Change Interrupt
   PCICR |= (1 << CONTROL_INT);   // Enable Pin Change Interrupt
