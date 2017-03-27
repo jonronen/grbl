@@ -21,6 +21,11 @@
 #include "grbl.h"
 
 
+#ifndef AVR
+void handle_control_interrupt (void);
+#endif
+
+
 void system_init()
 {
 #ifdef AVR
@@ -41,8 +46,14 @@ void system_init()
     GPIO_SET_PULLUPS(CONTROL_PORT, CONTROL_MASK);
     #endif
   #endif
+#ifdef AVR
   CONTROL_PCMSK |= CONTROL_MASK;  // Enable specific pins of the Pin Change Interrupt
   PCICR |= (1 << CONTROL_INT);   // Enable Pin Change Interrupt
+#else
+  gpio_interrupt_rise_enable (CONTROL_MASK);
+  gpio_interrupt_fall_enable (CONTROL_MASK);
+  gpio_interrupt_register (CONTROL_MASK, handle_control_interrupt);
+#endif
 }
 
 
@@ -72,7 +83,11 @@ uint8_t system_control_get_state()
 // only the realtime command execute variable to have the main program execute these when
 // its ready. This works exactly like the character-based realtime commands when picked off
 // directly from the incoming serial data stream.
+#ifdef AVR
 ISR(CONTROL_INT_vect)
+#else
+void handle_control_interrupt ()
+#endif
 {
   uint8_t pin = system_control_get_state();
   if (pin) {
@@ -363,57 +378,121 @@ uint8_t system_check_travel_limits(FLOAT *target)
 
 // Special handlers for setting and clearing Grbl's real-time execution flags.
 void system_set_exec_state_flag(uint8_t mask) {
+#ifdef AVR
   uint8_t sreg = SREG;
+#else
+  uint32_t sreg = GET_SYSTEM_STATUS();
+#endif
   cli();
   sys_rt_exec_state |= (mask);
+#ifdef AVR
   SREG = sreg;
+#else
+  SET_SYSTEM_STATUS(sreg);
+#endif
 }
 
 void system_clear_exec_state_flag(uint8_t mask) {
+#ifdef AVR
   uint8_t sreg = SREG;
+#else
+  uint32_t sreg = GET_SYSTEM_STATUS();
+#endif
   cli();
   sys_rt_exec_state &= ~(mask);
+#ifdef AVR
   SREG = sreg;
+#else
+  SET_SYSTEM_STATUS(sreg);
+#endif
 }
 
 void system_set_exec_alarm(uint8_t code) {
+#ifdef AVR
   uint8_t sreg = SREG;
+#else
+  uint32_t sreg = GET_SYSTEM_STATUS();
+#endif
   cli();
   sys_rt_exec_alarm = code;
+#ifdef AVR
   SREG = sreg;
+#else
+  SET_SYSTEM_STATUS(sreg);
+#endif
 }
 
 void system_clear_exec_alarm() {
+#ifdef AVR
   uint8_t sreg = SREG;
+#else
+  uint32_t sreg = GET_SYSTEM_STATUS();
+#endif
   cli();
   sys_rt_exec_alarm = 0;
+#ifdef AVR
   SREG = sreg;
+#else
+  SET_SYSTEM_STATUS(sreg);
+#endif
 }
 
 void system_set_exec_motion_override_flag(uint8_t mask) {
+#ifdef AVR
   uint8_t sreg = SREG;
+#else
+  uint32_t sreg = GET_SYSTEM_STATUS();
+#endif
   cli();
   sys_rt_exec_motion_override |= (mask);
+#ifdef AVR
   SREG = sreg;
+#else
+  SET_SYSTEM_STATUS(sreg);
+#endif
 }
 
 void system_set_exec_accessory_override_flag(uint8_t mask) {
+#ifdef AVR
   uint8_t sreg = SREG;
+#else
+  uint32_t sreg = GET_SYSTEM_STATUS();
+#endif
   cli();
   sys_rt_exec_accessory_override |= (mask);
+#ifdef AVR
   SREG = sreg;
+#else
+  SET_SYSTEM_STATUS(sreg);
+#endif
 }
 
 void system_clear_exec_motion_overrides() {
+#ifdef AVR
   uint8_t sreg = SREG;
+#else
+  uint32_t sreg = GET_SYSTEM_STATUS();
+#endif
   cli();
   sys_rt_exec_motion_override = 0;
+#ifdef AVR
   SREG = sreg;
+#else
+  SET_SYSTEM_STATUS(sreg);
+#endif
 }
 
 void system_clear_exec_accessory_overrides() {
+#ifdef AVR
   uint8_t sreg = SREG;
+#else
+  uint32_t sreg = GET_SYSTEM_STATUS();
+#endif
   cli();
   sys_rt_exec_accessory_override = 0;
+#ifdef AVR
   SREG = sreg;
+#else
+  SET_SYSTEM_STATUS(sreg);
+#endif
 }

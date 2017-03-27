@@ -4,6 +4,7 @@
 
   Copyright (c) 2012-2016 Sungeun K. Jeon for Gnea Research LLC
   Copyright (c) 2009-2011 Simen Svale Skogsrud
+  Copyright (c) 2017 Jon Ronen-Drori <jon_ronen@yahoo.com>
 
   Grbl is free software: you can redistribute it and/or modify
   it under the terms of the GNU General Public License as published by
@@ -30,6 +31,11 @@
   #define HOMING_AXIS_LOCATE_SCALAR  5.0 // Must be > 1 to ensure limit switch is cleared.
 #endif
 
+#ifndef AVR
+void handle_limit_interrupt ();
+#endif
+
+
 void limits_init()
 {
 #ifdef AVR
@@ -53,8 +59,14 @@ void limits_init()
   #endif
 
   if (bit_istrue(settings.flags,BITFLAG_HARD_LIMIT_ENABLE)) {
+#ifdef AVR
     LIMIT_PCMSK |= LIMIT_MASK; // Enable specific pins of the Pin Change Interrupt
     PCICR |= (1 << LIMIT_INT); // Enable Pin Change Interrupt
+#else
+    gpio_interrupt_rise_enable (LIMIT_MASK);
+    gpio_interrupt_fall_enable (LIMIT_MASK);
+    gpio_interrupt_register (LIMIT_MASK, handle_limit_interrupt);
+#endif
   } else {
     limits_disable();
   }
@@ -70,8 +82,13 @@ void limits_init()
 // Disables hard limits.
 void limits_disable()
 {
+#ifdef AVR
   LIMIT_PCMSK &= ~LIMIT_MASK;  // Disable specific pins of the Pin Change Interrupt
   PCICR &= ~(1 << LIMIT_INT);  // Disable Pin Change Interrupt
+#else
+  gpio_interrupt_rise_disable (LIMIT_MASK);
+  gpio_interrupt_fall_disable (LIMIT_MASK);
+#endif
 }
 
 
@@ -108,7 +125,11 @@ uint8_t limits_get_state()
 // special pinout for an e-stop, but it is generally recommended to just directly connect
 // your e-stop switch to the Arduino reset pin, since it is the most correct way to do this.
 #ifndef ENABLE_SOFTWARE_DEBOUNCE
+#ifdef AVR
   ISR(LIMIT_INT_vect) // DEFAULT: Limit pin change interrupt process.
+#else
+  void handle_limit_interrupt ()
+#endif
   {
     // Ignore limit switches if already in an alarm state or in-process of executing an alarm.
     // When in the alarm state, Grbl should have been reset or will force a reset, so any pending
@@ -132,7 +153,14 @@ uint8_t limits_get_state()
   }
 #else // OPTIONAL: Software debounce limit pin routine.
   // Upon limit pin change, enable watchdog timer to create a short delay. 
-  ISR(LIMIT_INT_vect) { if (!(WDTCSR & (1<<WDIE))) { WDTCSR |= (1<<WDIE); } }
+#ifdef AVR
+  ISR(LIMIT_INT_vect)
+#else
+  void handle_limit_interrupt ()
+#endif
+  {
+    if (!(WDTCSR & (1<<WDIE))) { WDTCSR |= (1<<WDIE); }
+  }
   ISR(WDT_vect) // Watchdog timer ISR
   {
     WDTCSR &= ~(1<<WDIE); // Disable watchdog timer. 
