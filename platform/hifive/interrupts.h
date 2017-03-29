@@ -1,5 +1,5 @@
 /*
-  uart_hal.h - UART hardware abstraction layer
+  interrupts.h - HiFive interrupts abstraction layer
   Part of Grbl
 
   Copyright (c) 2017 Jon Ronen-Drori <jon_ronen@yahoo.com>
@@ -19,22 +19,34 @@
 */
 
 
-#ifndef uart_hal_h
-#define uart_hal_h
+#ifndef interrupts_hal_h
+#define interrupts_hal_h
 
 
-#include <stdint.h>
-#include "interrupts.h"
+#include <stdlib.h>
+#include "plic/plic_driver.h"
 
 
-void uart_hal_setup (uint32_t baudrate);
-void uart_hal_disable_output_irq ();
-void uart_hal_enable_output_irq ();
-uint8_t uart_hal_get_byte ();
-void uart_hal_send_byte (uint8_t data);
-void uart_hal_register_tx_interrupt (function_ptr_t tx_handler);
-void uart_hal_register_rx_interrupt (function_ptr_t rx_handler);
+// Instance data for the PLIC.
+extern plic_instance_t g_plic;
+
+typedef void (*function_ptr_t) (void);
+extern function_ptr_t g_ext_interrupt_handlers[PLIC_NUM_INTERRUPTS];
 
 
-#endif // uart_hal_h
+#define interrupts_enable() \
+  set_csr(mstatus, MSTATUS_MIE)
+
+#define interrupts_disable() \
+  clear_csr(mstatus, MSTATUS_MIE)
+
+
+#define GET_SYSTEM_STATUS() \
+  read_csr(mstatus)
+
+#define SET_SYSTEM_STATUS(val) \
+  write_csr(mstatus, (val))
+
+
+#endif //interrupts_hal_h
 

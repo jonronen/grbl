@@ -1,5 +1,5 @@
 /*
-  uart_hal.h - UART hardware abstraction layer
+  timer_hal.h - timers abstraction layer
   Part of Grbl
 
   Copyright (c) 2017 Jon Ronen-Drori <jon_ronen@yahoo.com>
@@ -19,22 +19,19 @@
 */
 
 
-#ifndef uart_hal_h
-#define uart_hal_h
+#ifndef timer_hal_h
+#define timer_hal_h
 
 
 #include <stdint.h>
 #include "interrupts.h"
 
 
-void uart_hal_setup (uint32_t baudrate);
-void uart_hal_disable_output_irq ();
-void uart_hal_enable_output_irq ();
-uint8_t uart_hal_get_byte ();
-void uart_hal_send_byte (uint8_t data);
-void uart_hal_register_tx_interrupt (function_ptr_t tx_handler);
-void uart_hal_register_rx_interrupt (function_ptr_t rx_handler);
+void _delay_ms (uint16_t ms);
+
+unsigned long cpu_frequency (); 
 
 
-#endif // uart_hal_h
+#endif // timer_hal_h
+
 

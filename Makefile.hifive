@@ -31,7 +31,10 @@ SOURCES += serial.c protocol.c stepper.c settings.c planner.c
 SOURCES += nuts_bolts.c limits.c jog.c print.c probe.c report.c system.c
 C_SRCS += $(addprefix $(SOURCEDIR)/,$(SOURCES))
 
+C_SRCS += platform/hifive/interrupts.c
 C_SRCS += platform/hifive/uart_hal.c
+C_SRCS += platform/hifive/timer_hal.c
+C_SRCS += platform/hifive/pwm_hal.c
 C_SRCS += platform/hifive/eeprom_emulation.c 
 
 TARGET = grbl_program

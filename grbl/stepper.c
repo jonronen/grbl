@@ -344,7 +344,11 @@ static void pwm1_compare_interrupt ()
 #endif
 
   busy = true;
+#ifdef AVR
   sei(); // Re-enable interrupts to allow Stepper Port Reset Interrupt to fire on-time.
+#else
+  interrupts_enable ();
+#endif
          // NOTE: The remaining code in this ISR will finish before returning to main program.
 
   // If there is no step segment, attempt to pop one from the stepper buffer

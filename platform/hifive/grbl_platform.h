@@ -34,6 +34,8 @@
 #include "stdatomic.h"
 #include "pwm_hal.h"
 #include "uart_hal.h"
+#include "interrupts.h"
+#include "timer_hal.h"
 
 
 #endif

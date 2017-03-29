@@ -20,15 +20,32 @@
 
 
 #include "uart_hal.h"
+#include "timer_hal.h"
 #include <platform.h>
 #include <stdint.h>
+#include "encoding.h"
+#include "interrupts.h"
 
 
-extern unsigned long get_cpu_freq ();
+function_ptr_t g_tx_handler;
+function_ptr_t g_rx_handler;
+
+
+static void uart_interrupt_handler (void) {
+  clear_csr(mie, MIP_MEIP);
+  uint32_t uart_ip_reg = UART0_REG(UART_REG_IP);
+  if (uart_ip_reg & UART_IP_RXWM) {
+    if (g_rx_handler) g_rx_handler ();
+  }
+  if (uart_ip_reg & UART_IP_TXWM) {
+    if (g_tx_handler) g_tx_handler ();
+  }
+  set_csr(mie, MIP_MEIP);
+}
 
 
 void uart_hal_setup (uint32_t baudrate) {
-  UART0_REG(UART_REG_DIV) = get_cpu_freq() / baudrate + 1;
+  UART0_REG(UART_REG_DIV) = cpu_frequency () / baudrate + 1;
   g_ext_interrupt_handlers [INT_UART0_BASE] = uart_interrupt_handler;
   PLIC_set_priority(&g_plic, INT_UART0_BASE, 1);
   PLIC_enable_interrupt (&g_plic, INT_UART0_BASE);
@@ -38,25 +55,31 @@ void uart_hal_setup (uint32_t baudrate) {
 }
 
 void uart_hal_disable_output_irq () {
+  UART0_REG (UART_REG_IE) &= ~UART_IP_TXWM;
 }
 
 void uart_hal_enable_output_irq () {
+  UART0_REG (UART_REG_IE) |= UART_IP_TXWM;
 }
 
 uint8_t uart_hal_get_byte () {
+  uint32_t rx_val = UART0_REG (UART_REG_RXFIFO);
+  if ((rx_val & 0x80000000) == 0) {
+    return (uint8_t)rx_val;
+  }
+  // 0xff means no data
+  return 0xff;
 }
 
 void uart_hal_send_byte (uint8_t data) {
+  UART0_REG (UART_REG_TXFIFO) = data;
 }
 
-void uart_hal_register_tx_interrupt (callback_fn_t tx_handler) {
+void uart_hal_register_tx_interrupt (function_ptr_t tx_handler) {
+  g_tx_handler = tx_handler;
 }
 
-void uart_hal_register_rx_interrupt (callback_fn_t rx_handler) {
+void uart_hal_register_rx_interrupt (function_ptr_t rx_handler) {
+  g_rx_handler = rx_handler;
 }
-
-
-
-
-
 

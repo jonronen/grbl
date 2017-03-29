@@ -1,5 +1,5 @@
 /*
-  uart_hal.h - UART hardware abstraction layer
+  timer_hal.c - timers abstraction layer
   Part of Grbl
 
   Copyright (c) 2017 Jon Ronen-Drori <jon_ronen@yahoo.com>
@@ -19,22 +19,28 @@
 */
 
 
-#ifndef uart_hal_h
-#define uart_hal_h
+#include "timer_hal.h"
+#include "platform.h"
 
 
-#include <stdint.h>
-#include "interrupts.h"
+#define RTC_FREQUENCY 32768
 
 
-void uart_hal_setup (uint32_t baudrate);
-void uart_hal_disable_output_irq ();
-void uart_hal_enable_output_irq ();
-uint8_t uart_hal_get_byte ();
-void uart_hal_send_byte (uint8_t data);
-void uart_hal_register_tx_interrupt (function_ptr_t tx_handler);
-void uart_hal_register_rx_interrupt (function_ptr_t rx_handler);
+void _delay_ms (uint16_t ms) {
+  volatile uint64_t * mtime = (uint64_t*) (CLINT_BASE_ADDR + CLINT_MTIME);
+  uint64_t now = *mtime;
+  uint64_t then = now + (ms * RTC_FREQUENCY / 1000);
+  while (*mtime < then);
+}
 
+uint32_t F_CPU;
 
-#endif // uart_hal_h
+extern unsigned long get_cpu_freq ();
+
+unsigned long cpu_frequency () {
+  if (F_CPU == 0) {
+    F_CPU = get_cpu_freq ();
+  }
+  return F_CPU;
+}
 

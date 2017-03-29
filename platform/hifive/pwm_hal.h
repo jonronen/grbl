@@ -23,12 +23,12 @@
 #define pwm_hal_h
 
 
+#include "interrupts.h"
+
+
 #define PWM_PRESCALER_1 1
 #define PWM_PRESCALER_8 2
 #define PWM_PRESCALER_64 3
-
-
-typedef void (*callback_fn_t) (void);
 
 
 void pwm_hal_setup (uint32_t pwm_index, uint32_t scaling);
@@ -41,7 +41,7 @@ void pwm_hal_set_prescaler (uint32_t pwm_index, uint32_t prescaler);
 void pwm_hal_set_comparator (uint32_t pwm_index, uint32_t comp_value);
 void pwm_hal_start (uint32_t pwm_index);
 void pwm_hal_disable (uint32_t pwm_index);
-void pwm_hal_interrupt_register (uint32_t pwm_index, callback_fn_t fn);
+void pwm_hal_interrupt_register (uint32_t pwm_index, function_ptr_t fn);
 
 
 #endif // pwm_hal_h

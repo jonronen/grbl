@@ -42,7 +42,11 @@ int main(void)
   system_init();   // Configure pinout pins and pin-change interrupt
 
   memset(sys_position,0,sizeof(sys_position)); // Clear machine position.
+#ifdef AVR
   sei(); // Enable interrupts
+#else
+  interrupts_enable ();
+#endif
 
   // Initialize system state.
   #ifdef FORCE_INITIALIZATION_ALARM

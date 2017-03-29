@@ -45,7 +45,7 @@
 #define MM_PER_INCH (25.40)
 #define INCH_PER_MM (0.0393701)
 #ifndef AVR
-extern uint32_t F_CPU;
+#define F_CPU cpu_frequency()
 #endif
 #define TICKS_PER_MICROSECOND (F_CPU/1000000)
 

@@ -380,10 +380,11 @@ uint8_t system_check_travel_limits(FLOAT *target)
 void system_set_exec_state_flag(uint8_t mask) {
 #ifdef AVR
   uint8_t sreg = SREG;
+  cli();
 #else
   uint32_t sreg = GET_SYSTEM_STATUS();
+  interrupts_disable ();
 #endif
-  cli();
   sys_rt_exec_state |= (mask);
 #ifdef AVR
   SREG = sreg;
@@ -395,10 +396,11 @@ void system_set_exec_state_flag(uint8_t mask) {
 void system_clear_exec_state_flag(uint8_t mask) {
 #ifdef AVR
   uint8_t sreg = SREG;
+  cli();
 #else
   uint32_t sreg = GET_SYSTEM_STATUS();
+  interrupts_disable ();
 #endif
-  cli();
   sys_rt_exec_state &= ~(mask);
 #ifdef AVR
   SREG = sreg;
@@ -410,10 +412,11 @@ void system_clear_exec_state_flag(uint8_t mask) {
 void system_set_exec_alarm(uint8_t code) {
 #ifdef AVR
   uint8_t sreg = SREG;
+  cli();
 #else
   uint32_t sreg = GET_SYSTEM_STATUS();
+  interrupts_disable ();
 #endif
-  cli();
   sys_rt_exec_alarm = code;
 #ifdef AVR
   SREG = sreg;
@@ -425,10 +428,11 @@ void system_set_exec_alarm(uint8_t code) {
 void system_clear_exec_alarm() {
 #ifdef AVR
   uint8_t sreg = SREG;
+  cli();
 #else
   uint32_t sreg = GET_SYSTEM_STATUS();
+  interrupts_disable ();
 #endif
-  cli();
   sys_rt_exec_alarm = 0;
 #ifdef AVR
   SREG = sreg;
@@ -440,10 +444,11 @@ void system_clear_exec_alarm() {
 void system_set_exec_motion_override_flag(uint8_t mask) {
 #ifdef AVR
   uint8_t sreg = SREG;
+  cli();
 #else
   uint32_t sreg = GET_SYSTEM_STATUS();
+  interrupts_disable ();
 #endif
-  cli();
   sys_rt_exec_motion_override |= (mask);
 #ifdef AVR
   SREG = sreg;
@@ -455,10 +460,11 @@ void system_set_exec_motion_override_flag(uint8_t mask) {
 void system_set_exec_accessory_override_flag(uint8_t mask) {
 #ifdef AVR
   uint8_t sreg = SREG;
+  cli();
 #else
   uint32_t sreg = GET_SYSTEM_STATUS();
+  interrupts_disable ();
 #endif
-  cli();
   sys_rt_exec_accessory_override |= (mask);
 #ifdef AVR
   SREG = sreg;
@@ -470,10 +476,11 @@ void system_set_exec_accessory_override_flag(uint8_t mask) {
 void system_clear_exec_motion_overrides() {
 #ifdef AVR
   uint8_t sreg = SREG;
+  cli();
 #else
   uint32_t sreg = GET_SYSTEM_STATUS();
+  interrupts_disable ();
 #endif
-  cli();
   sys_rt_exec_motion_override = 0;
 #ifdef AVR
   SREG = sreg;
@@ -485,10 +492,11 @@ void system_clear_exec_motion_overrides() {
 void system_clear_exec_accessory_overrides() {
 #ifdef AVR
   uint8_t sreg = SREG;
+  cli();
 #else
   uint32_t sreg = GET_SYSTEM_STATUS();
+  interrupts_disable ();
 #endif
-  cli();
   sys_rt_exec_accessory_override = 0;
 #ifdef AVR
   SREG = sreg;
