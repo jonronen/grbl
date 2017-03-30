@@ -37,16 +37,18 @@ int main(void)
 {
   // Initialize system upon power-up.
   serial_init();   // Setup serial baud rate and interrupts
-  settings_init(); // Load Grbl settings from EEPROM
-  stepper_init();  // Configure stepper pins and interrupt timers
-  system_init();   // Configure pinout pins and pin-change interrupt
 
-  memset(sys_position,0,sizeof(sys_position)); // Clear machine position.
 #ifdef AVR
   sei(); // Enable interrupts
 #else
   interrupts_enable ();
 #endif
+
+  settings_init(); // Load Grbl settings from EEPROM
+  stepper_init();  // Configure stepper pins and interrupt timers
+  system_init();   // Configure pinout pins and pin-change interrupt
+
+  memset(sys_position,0,sizeof(sys_position)); // Clear machine position.
 
   // Initialize system state.
   #ifdef FORCE_INITIALIZATION_ALARM
@@ -104,6 +106,7 @@ int main(void)
 
     // Start Grbl main loop. Processes program inputs and executes them.
     protocol_main_loop();
+    uart_hal_send_byte ('m');
 
   }
   return 0;   /* Never reached */

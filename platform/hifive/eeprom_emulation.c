@@ -13,7 +13,7 @@ unsigned char eeprom_get_char (unsigned int addr) {
 }
 
 void eeprom_put_char(unsigned int addr, unsigned char new_value) {
-  if (addr >= EEPROM_MAX_SIZE) return 0;
+  if (addr >= EEPROM_MAX_SIZE) return;
   g_eeprom_arr [addr] = new_value;
 }
 
@@ -34,7 +34,7 @@ int memcpy_from_eeprom_with_checksum (
   unsigned int source,
   unsigned int size
 ) {
-  if (source >= EEPROM_MAX_SIZE) return;
+  if (source >= EEPROM_MAX_SIZE) return 0;
   if (size > EEPROM_MAX_SIZE - source) {
     size = EEPROM_MAX_SIZE - source;
   }

@@ -45,13 +45,28 @@ static void uart_interrupt_handler (void) {
 
 
 void uart_hal_setup (uint32_t baudrate) {
+
+  // TODO: move the PLIC_init to a better place
+  PLIC_init(
+    &g_plic,
+    PLIC_BASE_ADDR,
+    PLIC_NUM_INTERRUPTS,
+    PLIC_NUM_PRIORITIES
+  );
+
+  // Disable the machine & timer interrupts until setup is done.
+
+  clear_csr(mie, MIP_MEIP);
+
   UART0_REG(UART_REG_DIV) = cpu_frequency () / baudrate + 1;
+  UART0_REG(UART_REG_RXCTRL) = UART_RXEN;
+  UART0_REG(UART_REG_TXCTRL) = UART_TXWM(8) | UART_TXEN;
+  UART0_REG(UART_REG_IE) = UART_IP_RXWM | UART_IP_TXWM;
   g_ext_interrupt_handlers [INT_UART0_BASE] = uart_interrupt_handler;
   PLIC_set_priority(&g_plic, INT_UART0_BASE, 1);
   PLIC_enable_interrupt (&g_plic, INT_UART0_BASE);
-  UART0_REG(UART_REG_RXCTRL) = UART_RXEN;
-  UART0_REG(UART_REG_TXCTRL) = UART_TXWM(8) | UART_TXEN;
-  UART0_REG(UART_REG_IE) = UART_IP_RXWM;
+
+  set_csr(mie, MIP_MEIP);
 }
 
 void uart_hal_disable_output_irq () {
