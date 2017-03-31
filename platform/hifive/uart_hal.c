@@ -32,14 +32,26 @@ function_ptr_t g_rx_handler;
 
 
 static void uart_interrupt_handler (void) {
+
+  // disable interrupts first to enable reading the registers without changing
+  // the interrupt status in between register reads
   clear_csr(mie, MIP_MEIP);
+
+  // the interrupts pending depend on the IP register
   uint32_t uart_ip_reg = UART0_REG(UART_REG_IP);
+  // mask the interrupts that were not enabled in the first place. this covers
+  // cases where an old status bit was left in the IP register
+  uart_ip_reg &= UART0_REG(UART_REG_IE);
+
+  // now handle each one of the interrupts
   if (uart_ip_reg & UART_IP_RXWM) {
     if (g_rx_handler) g_rx_handler ();
   }
   if (uart_ip_reg & UART_IP_TXWM) {
     if (g_tx_handler) g_tx_handler ();
   }
+
+  // restore interrupts
   set_csr(mie, MIP_MEIP);
 }
 
