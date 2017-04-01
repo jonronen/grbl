@@ -135,13 +135,17 @@ void pwm_hal_set_comparator (uint32_t pwm_index, uint32_t comp_value) {
     default:
       break;
   }
-  if (prescaler >= 16) prescaler = 15; // maximal prescaler value
+  if (prescaler >= 16) {
+    prescaler = 15; // maximal prescaler value
+  }
   switch (pwm_index) {
     case 1:
+      PWM1_REG(PWM_CFG) &= ~0xf;
       PWM1_REG(PWM_CFG) |= prescaler;
       PWM1_REG(PWM_CMP0) = comp_value;
       break;
     case 2:
+      PWM2_REG(PWM_CFG) &= ~0xf;
       PWM2_REG(PWM_CFG) |= prescaler;
       PWM2_REG(PWM_CMP0) = comp_value;
       break;
@@ -154,9 +158,11 @@ void pwm_hal_start (uint32_t pwm_index) {
   if (pwm_index >= PWM_INDEX_COUNT) return;
   switch (pwm_index) {
     case 1:
+      PWM1_REG(PWM_COUNT) = 0;
       PWM1_REG(PWM_CFG) |= PWM_CFG_ENALWAYS;
       break;
     case 2:
+      PWM2_REG(PWM_COUNT) = 0;
       PWM2_REG(PWM_CFG) |= PWM_CFG_ENALWAYS;
       break;
     default:

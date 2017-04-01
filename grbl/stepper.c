@@ -104,7 +104,11 @@ typedef struct {
   #endif
 
   uint8_t execute_step;     // Flags step execution for each interrupt.
+#ifdef AVR
   uint8_t step_pulse_time;  // Step pulse reset time after step rise
+#else
+  uint32_t step_pulse_time;  // Step pulse reset time after step rise
+#endif
   uint8_t step_outbits;         // The next stepping-bits to be output
   uint8_t dir_outbits;
   #ifdef ADAPTIVE_MULTI_AXIS_STEP_SMOOTHING
@@ -223,12 +227,20 @@ void st_wake_up()
   // Initialize step pulse timing from settings. Here to ensure updating after re-writing.
   #ifdef STEP_PULSE_DELAY
     // Set total step pulse time after direction pin set. Ad hoc computation from oscilloscope.
+#ifdef AVR
     st.step_pulse_time = -(((settings.pulse_microseconds+STEP_PULSE_DELAY-2)*TICKS_PER_MICROSECOND) >> 3);
+#else
+    st.step_pulse_time = ((settings.pulse_microseconds+STEP_PULSE_DELAY-2)*TICKS_PER_MICROSECOND) >> 3;
+#endif
     // Set delay between direction pin write and step command.
     OCR0A = -(((settings.pulse_microseconds)*TICKS_PER_MICROSECOND) >> 3);
   #else // Normal operation
     // Set step pulse time. Ad hoc computation from oscilloscope. Uses two's complement.
+#ifdef AVR
     st.step_pulse_time = -(((settings.pulse_microseconds-2)*TICKS_PER_MICROSECOND) >> 3);
+#else
+    st.step_pulse_time = ((settings.pulse_microseconds-2)*TICKS_PER_MICROSECOND) >> 3;
+#endif
   #endif
 
   // Enable Stepper Driver Interrupt
@@ -339,7 +351,7 @@ static void pwm1_compare_interrupt ()
   TCCR0B = (1<<CS01); // Begin Timer0. Full speed, 1/8 prescaler
 #else
   pwm_hal_set_prescaler (PULSE_OFF_PWM_NUMBER, PWM_PRESCALER_8);
-  pwm_hal_set_comparator (PULSE_OFF_PWM_NUMBER, -st.step_pulse_time);
+  pwm_hal_set_comparator (PULSE_OFF_PWM_NUMBER, st.step_pulse_time);
   pwm_hal_start (PULSE_OFF_PWM_NUMBER);
 #endif
 
