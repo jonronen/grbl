@@ -58,12 +58,10 @@ void pwm_hal_setup (uint32_t pwm_index, uint32_t scaling) {
   if (pwm_index != 0) return;
   PWM0_REG(PWM_CFG) = 0;
   PWM0_REG(PWM_COUNT) = 0;
-  PWM0_REG(PWM_CMP0) = 256;
+  PWM0_REG(PWM_CMP0) = 0;
   PWM0_REG(PWM_CMP1) = 0;
   PWM0_REG(PWM_CMP2) = 0;
-  PWM0_REG(PWM_CMP3) = 256;
-  // TODO: scaling
-  (void)scaling;
+  PWM0_REG(PWM_CMP3) = 0xff;
 }
 
 void pwm_hal_output_disable (uint32_t pwm_index) {
@@ -71,12 +69,13 @@ void pwm_hal_output_disable (uint32_t pwm_index) {
   if (pwm_index != 0) return;
   PWM0_REG(PWM_CFG) = 0;
   PWM0_REG(PWM_COUNT) = 0;
-  PWM0_REG(PWM_CMP3) = 256;
+  PWM0_REG(PWM_CMP3) = 0xff;
 }
 
 void pwm_hal_output_enable (uint32_t pwm_index) {
   // for now we only support PWM0
   if (pwm_index != 0) return;
+  PWM0_REG(PWM_COUNT) = 0;
   PWM0_REG(PWM_CFG) = PWM_CFG_ENALWAYS;
 }
 

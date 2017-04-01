@@ -40,6 +40,12 @@
   GPIO_REG(GPIO_OUTPUT_EN) |= (OUTPUT_MASK); \
   GPIO_REG(GPIO_INPUT_EN) &= (~(OUTPUT_MASK))
 
+#define GPIO_SET_PWM_OUTPUTS(DDR_REG, OUTPUT_MASK) \
+  GPIO_REG(GPIO_OUTPUT_EN) |= (OUTPUT_MASK); \
+  GPIO_REG(GPIO_INPUT_EN) &= (~(OUTPUT_MASK)); \
+  GPIO_REG(GPIO_IOF_SEL) |= (OUTPUT_MASK); \
+  GPIO_REG(GPIO_IOF_EN) |= (OUTPUT_MASK)
+
 #define GPIO_SET_PULLUPS(PORT_REG, PULLUP_MASK) \
   GPIO_REG(GPIO_PULLUP_EN) |= (PULLUP_MASK)
 
@@ -49,21 +55,21 @@
 
 // Define step pulse output pins. NOTE: All step bit pins must be on the same port.
 #define STEP_PORT       GPIO_REG(GPIO_OUTPUT_VAL)
-#define X_STEP_BIT      2  // Uno Digital Pin 2
-#define Y_STEP_BIT      3  // Uno Digital Pin 3
-#define Z_STEP_BIT      4  // Uno Digital Pin 4
+#define X_STEP_BIT      PIN_2_OFFSET // Uno Digital Pin 2
+#define Y_STEP_BIT      PIN_3_OFFSET // Uno Digital Pin 3
+#define Z_STEP_BIT      PIN_4_OFFSET // Uno Digital Pin 4
 #define STEP_MASK       ((1<<X_STEP_BIT)|(1<<Y_STEP_BIT)|(1<<Z_STEP_BIT)) // All step bits
 
 // Define step direction output pins. NOTE: All direction pins must be on the same port.
 #define DIRECTION_PORT    GPIO_REG(GPIO_OUTPUT_VAL)
-#define X_DIRECTION_BIT   5  // Uno Digital Pin 5
-#define Y_DIRECTION_BIT   6  // Uno Digital Pin 6
-#define Z_DIRECTION_BIT   7  // Uno Digital Pin 7
+#define X_DIRECTION_BIT   PIN_5_OFFSET // Uno Digital Pin 5
+#define Y_DIRECTION_BIT   PIN_6_OFFSET // Uno Digital Pin 6
+#define Z_DIRECTION_BIT   PIN_7_OFFSET // Uno Digital Pin 7
 #define DIRECTION_MASK    ((1<<X_DIRECTION_BIT)|(1<<Y_DIRECTION_BIT)|(1<<Z_DIRECTION_BIT)) // All direction bits
 
 // Define stepper driver enable/disable output pin.
 #define STEPPERS_DISABLE_PORT   GPIO_REG(GPIO_OUTPUT_VAL)
-#define STEPPERS_DISABLE_BIT    0  // Uno Digital Pin 8
+#define STEPPERS_DISABLE_BIT    PIN_8_OFFSET // Uno Digital Pin 8
 #define STEPPERS_DISABLE_MASK   (1<<STEPPERS_DISABLE_BIT)
 #define STEPPERS_PWM_NUMBER     1
 #define PULSE_OFF_PWM_NUMBER    2
@@ -72,12 +78,12 @@
 // NOTE: All limit bit pins must be on the same port, but not on a port with other input pins (CONTROL).
 #define LIMIT_PIN        GPIO_REG(GPIO_INPUT_VAL)
 #define LIMIT_PORT       GPIO_REG(GPIO_OUTPUT_VAL)
-#define X_LIMIT_BIT      1  // Uno Digital Pin 9
-#define Y_LIMIT_BIT      2  // Uno Digital Pin 10
+#define X_LIMIT_BIT      PIN_9_OFFSET // Uno Digital Pin 9
+#define Y_LIMIT_BIT      PIN_10_OFFSET // Uno Digital Pin 10
 #ifdef VARIABLE_SPINDLE // Z Limit pin and spindle enabled swapped to access hardware PWM on Pin 11.
-  #define Z_LIMIT_BIT	   4 // Uno Digital Pin 12
+  #define Z_LIMIT_BIT	 PIN_12_OFFSET // Uno Digital Pin 12
 #else
-  #define Z_LIMIT_BIT    3  // Uno Digital Pin 11
+  #define Z_LIMIT_BIT    PIN_11_OFFSET // Uno Digital Pin 11
 #endif
 #define LIMIT_MASK       ((1<<X_LIMIT_BIT)|(1<<Y_LIMIT_BIT)|(1<<Z_LIMIT_BIT)) // All limit bits
 #define LIMIT_INT        PCIE0  // Pin change interrupt enable pin
@@ -90,16 +96,16 @@
 #ifdef VARIABLE_SPINDLE
   #ifdef USE_SPINDLE_DIR_AS_ENABLE_PIN
     // If enabled, spindle direction pin now used as spindle enable, while PWM remains on D11.
-    #define SPINDLE_ENABLE_BIT    5  // Uno Digital Pin 13 (NOTE: D13 can't be pulled-high input due to LED.)
+    #define SPINDLE_ENABLE_BIT PIN_13_OFFSET // Uno Digital Pin 13 (NOTE: D13 can't be pulled-high input due to LED.)
   #else
-    #define SPINDLE_ENABLE_BIT    3  // Uno Digital Pin 11
+    #define SPINDLE_ENABLE_BIT PIN_11_OFFSET // Uno Digital Pin 11
   #endif
 #else
-  #define SPINDLE_ENABLE_BIT    4  // Uno Digital Pin 12
+  #define SPINDLE_ENABLE_BIT   PIN_12_OFFSET // Uno Digital Pin 12
 #endif
 #ifndef USE_SPINDLE_DIR_AS_ENABLE_PIN
   #define SPINDLE_DIRECTION_PORT  GPIO_REG(GPIO_OUTPUT_VAL)
-  #define SPINDLE_DIRECTION_BIT   5  // Uno Digital Pin 13 (NOTE: D13 can't be pulled-high input due to LED.)
+  #define SPINDLE_DIRECTION_BIT   PIN_13_OFFSET // Uno Digital Pin 13 (NOTE: D13 can't be pulled-high input due to LED.)
 #endif
 
 // Define flood and mist coolant enable output pins.
@@ -152,7 +158,7 @@
 
 // NOTE: On the 328p, these must be the same as the SPINDLE_ENABLE settings.
 #define SPINDLE_PWM_PORT  GPIO_REG(GPIO_OUTPUT_VAL)
-#define SPINDLE_PWM_BIT	  3    // Uno Digital Pin 11
+#define SPINDLE_PWM_BIT	  PIN_11_OFFSET // Arduino-like Digital Pin 11
 
 
 #endif

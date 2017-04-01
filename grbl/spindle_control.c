@@ -34,7 +34,7 @@ void spindle_init()
     // Configure variable spindle PWM and enable pin, if requried. On the Uno, PWM and enable are
     // combined unless configured otherwise.
     // Configure as PWM output pin.
-    GPIO_SET_OUTPUTS(SPINDLE_PWM_DDR, (1<<SPINDLE_PWM_BIT));
+    GPIO_SET_PWM_OUTPUTS(SPINDLE_PWM_DDR, (1<<SPINDLE_PWM_BIT));
     // Configure PWM output compare timer
 #ifdef AVR
     SPINDLE_TCCRA_REGISTER = SPINDLE_TCCRA_INIT_MASK;
