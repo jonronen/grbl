@@ -132,13 +132,25 @@ void settings_write_coord_data(uint8_t coord_select, FLOAT *coord_data);
 uint8_t settings_read_coord_data(uint8_t coord_select, FLOAT *coord_data);
 
 // Returns the step pin mask according to Grbl's internal axis numbering
+#ifdef AVR
 uint8_t get_step_pin_mask(uint8_t i);
+#else
+uint32_t get_step_pin_mask(uint8_t i);
+#endif
 
 // Returns the direction pin mask according to Grbl's internal axis numbering
+#ifdef AVR
 uint8_t get_direction_pin_mask(uint8_t i);
+#else
+uint32_t get_direction_pin_mask(uint8_t i);
+#endif
 
 // Returns the limit pin mask according to Grbl's internal axis numbering
+#ifdef AVR
 uint8_t get_limit_pin_mask(uint8_t i);
+#else
+uint32_t get_limit_pin_mask(uint8_t i);
+#endif
 
 
 #endif

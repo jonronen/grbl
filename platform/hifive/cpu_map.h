@@ -110,18 +110,19 @@
 
 // Define flood and mist coolant enable output pins.
 #define COOLANT_FLOOD_PORT  GPIO_REG(GPIO_OUTPUT_VAL)
-#define COOLANT_FLOOD_BIT   3  // Uno Analog Pin 3
+#define COOLANT_FLOOD_BIT   PIN_17_OFFSET // Uno Analog Pin 3
 #define COOLANT_MIST_PORT  GPIO_REG(GPIO_OUTPUT_VAL)
-#define COOLANT_MIST_BIT   4  // Uno Analog Pin 4
+#define COOLANT_MIST_BIT   PIN_18_OFFSET // Uno Analog Pin 4
 
 // Define user-control controls (cycle start, reset, feed hold) input pins.
 // NOTE: All CONTROLs pins must be on the same port and not on a port with other input pins (limits).
 #define CONTROL_PIN       GPIO_REG(GPIO_INPUT_VAL)
 #define CONTROL_PORT      GPIO_REG(GPIO_OUTPUT_VAL)
-#define CONTROL_RESET_BIT         0  // Uno Analog Pin 0
-#define CONTROL_FEED_HOLD_BIT     1  // Uno Analog Pin 1
-#define CONTROL_CYCLE_START_BIT   2  // Uno Analog Pin 2
-#define CONTROL_SAFETY_DOOR_BIT   1  // Uno Analog Pin 1 NOTE: Safety door is shared with feed hold. Enabled by config define.
+// TODO: Pin 14 is not connected on HiFive1?
+#define CONTROL_RESET_BIT       PIN_15_OFFSET // Uno Analog Pin 0
+#define CONTROL_FEED_HOLD_BIT   PIN_15_OFFSET // Uno Analog Pin 1
+#define CONTROL_CYCLE_START_BIT PIN_16_OFFSET // Uno Analog Pin 2
+#define CONTROL_SAFETY_DOOR_BIT PIN_15_OFFSET // Uno Analog Pin 1 NOTE: Safety door is shared with feed hold. Enabled by config define.
 #define CONTROL_INT       PCIE1  // Pin change interrupt enable pin
 #define CONTROL_INT_vect  PCINT1_vect
 #define CONTROL_PCMSK     PCMSK1 // Pin change interrupt register
@@ -131,7 +132,7 @@
 // Define probe switch input pin.
 #define PROBE_PIN       GPIO_REG(GPIO_INPUT_VAL)
 #define PROBE_PORT      GPIO_REG(GPIO_OUTPUT_VAL)
-#define PROBE_BIT       5  // Uno Analog Pin 5
+#define PROBE_BIT       PIN_19_OFFSET // Uno Analog Pin 5
 #define PROBE_MASK      (1<<PROBE_BIT)
 
 // Variable spindle configuration below. Do not change unless you know what you are doing.

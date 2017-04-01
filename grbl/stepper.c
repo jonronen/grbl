@@ -106,11 +106,13 @@ typedef struct {
   uint8_t execute_step;     // Flags step execution for each interrupt.
 #ifdef AVR
   uint8_t step_pulse_time;  // Step pulse reset time after step rise
-#else
-  uint32_t step_pulse_time;  // Step pulse reset time after step rise
-#endif
   uint8_t step_outbits;         // The next stepping-bits to be output
   uint8_t dir_outbits;
+#else
+  uint32_t step_pulse_time;  // Step pulse reset time after step rise
+  uint32_t step_outbits;         // The next stepping-bits to be output
+  uint32_t dir_outbits;
+#endif
   #ifdef ADAPTIVE_MULTI_AXIS_STEP_SMOOTHING
     uint32_t steps[N_AXIS];
   #endif
@@ -128,8 +130,13 @@ static uint8_t segment_buffer_head;
 static uint8_t segment_next_head;
 
 // Step and direction port invert masks.
+#ifdef AVR
 static uint8_t step_port_invert_mask;
 static uint8_t dir_port_invert_mask;
+#else
+static uint32_t step_port_invert_mask;
+static uint32_t dir_port_invert_mask;
+#endif
 
 // Used to avoid ISR nesting of the "Stepper Driver Interrupt". Should never occur though.
 static volatile uint8_t busy;
