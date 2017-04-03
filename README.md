@@ -6,8 +6,14 @@ Porting attempts are focused on HiFive1 at the moment. HiFive1 is an open source
 ### Building Instructions
 To build for AVR-based platforms:
 * make -f Makefile.avr
+
 To build for HiFive1:
+* use the freedom-e-sdk package
+* clone this repository (grbl_porting) into freedom-e-sdk/software/grbl_porting
+* cd software/grbl_porting
 * make -f Makefile.hifive
+* cd ../..
+* sudo make upload PROGRAM=grbl_porting
 
 
 ## From Grbl's official README:
