@@ -1,16 +1,16 @@
-###Grbl porting to non-AVR platforms
+## Grbl porting to non-AVR platforms
 This fork of Grbl contains some porting attempts. It's still work in progress and is delivered as-is with no warranty.
 
 Porting attempts are focused on HiFive1 at the moment. HiFive1 is an open source chip based on the fully open RISCV architecture developed at UC Berkley.
 
-###Building Instructions
+### Building Instructions
 To build for AVR-based platforms:
 * make -f Makefile.avr
 To build for HiFive1:
 * make -f Makefile.hifive
 
 
-###From Grbl's official README:
+## From Grbl's official README:
 
 Grbl is a no-compromise, high performance, low cost alternative to parallel-port-based motion control for CNC milling. This version of Grbl runs on an Arduino with a 328p processor (Uno, Duemilanove, Nano, Micro, etc).
 
