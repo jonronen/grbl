@@ -38,7 +38,7 @@ C_SRCS += platform/hifive/timer_hal.c
 C_SRCS += platform/hifive/pwm_hal.c
 C_SRCS += platform/hifive/eeprom_emulation.c 
 
-TARGET = grbl1
+TARGET = grbl_porting
 CFLAGS += -O2 -fno-builtin-printf -Iplatform/hifive -Igrbl
 CFLAGS += -DUSE_PLIC -DUSE_M_TIME
 LDFLAGS += -lm
