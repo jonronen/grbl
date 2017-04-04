@@ -107,6 +107,9 @@ extern settings_t settings;
 // Initialize the configuration subsystem (load settings from EEPROM)
 void settings_init();
 
+// Report the initialization status (in case we failed to load the settings)
+void settings_report_init_status();
+
 // Helper function to clear and restore EEPROM defaults
 void settings_restore(uint8_t restore_flag);
 

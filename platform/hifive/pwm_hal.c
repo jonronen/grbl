@@ -33,21 +33,19 @@ static function_ptr_t g_pwm_handlers [PWM_INDEX_COUNT];
 static uint32_t g_prescalers [PWM_INDEX_COUNT];
 
 static void pwm1_interrupt_handler (void) {
-  clear_csr(mie, MIP_MEIP);
-  PWM1_REG(PWM_CFG) &= ~PWM_CFG_CMP0IP;
+  PWM1_REG(PWM_CFG) &=
+    ~(PWM_CFG_CMP0IP|PWM_CFG_CMP1IP|PWM_CFG_CMP2IP|PWM_CFG_CMP3IP);
   if (g_pwm_handlers [1]) {
     g_pwm_handlers [1] ();
   }
-  set_csr(mie, MIP_MEIP);
 }
 
 static void pwm2_interrupt_handler (void) {
-  clear_csr(mie, MIP_MEIP);
-  PWM2_REG(PWM_CFG) &= ~PWM_CFG_CMP0IP;
+  PWM2_REG(PWM_CFG) &=
+    ~(PWM_CFG_CMP0IP|PWM_CFG_CMP1IP|PWM_CFG_CMP2IP|PWM_CFG_CMP3IP);
   if (g_pwm_handlers [2]) {
     g_pwm_handlers [2] ();
   }
-  set_csr(mie, MIP_MEIP);
 }
 
 
@@ -82,7 +80,8 @@ void pwm_hal_output_enable (uint32_t pwm_index) {
 int pwm_hal_is_output_enabled (uint32_t pwm_index) {
   // for now we only support PWM0
   if (pwm_index != 0) return 0;
-  return PWM0_REG(PWM_CFG) != 0;
+  uint32_t cfg_reg = PWM0_REG(PWM_CFG);
+  return cfg_reg != 0;
 }
 
 
@@ -90,7 +89,7 @@ void pwm_hal_timer_init (uint32_t pwm_index) {
   if (pwm_index >= PWM_INDEX_COUNT) return;
   switch (pwm_index) {
     case 1:
-      PWM1_REG(PWM_CFG) = PWM_CFG_STICKY | PWM_CFG_ZEROCMP;
+      PWM1_REG(PWM_CFG) = 0;
       PWM1_REG(PWM_COUNT) = 0;
       PWM1_REG(PWM_CMP0) = 0xffff;
       PWM1_REG(PWM_CMP1) = 0xffff;
@@ -98,7 +97,7 @@ void pwm_hal_timer_init (uint32_t pwm_index) {
       PWM1_REG(PWM_CMP3) = 0xffff;
       break;
     case 2:
-      PWM2_REG(PWM_CFG) = PWM_CFG_STICKY | PWM_CFG_ZEROCMP;
+      PWM2_REG(PWM_CFG) = 0;
       PWM2_REG(PWM_COUNT) = 0;
       PWM2_REG(PWM_CMP0) = 0xffff;
       PWM2_REG(PWM_CMP1) = 0xffff;
@@ -158,11 +157,11 @@ void pwm_hal_start (uint32_t pwm_index) {
   switch (pwm_index) {
     case 1:
       PWM1_REG(PWM_COUNT) = 0;
-      PWM1_REG(PWM_CFG) |= PWM_CFG_ENALWAYS;
+      PWM1_REG(PWM_CFG) |= (PWM_CFG_ENALWAYS|PWM_CFG_STICKY|PWM_CFG_ZEROCMP);
       break;
     case 2:
       PWM2_REG(PWM_COUNT) = 0;
-      PWM2_REG(PWM_CFG) |= PWM_CFG_ENALWAYS;
+      PWM2_REG(PWM_CFG) |= (PWM_CFG_ENALWAYS|PWM_CFG_STICKY|PWM_CFG_ZEROCMP);
       break;
     default:
       break;
@@ -172,10 +171,12 @@ void pwm_hal_start (uint32_t pwm_index) {
 void pwm_hal_disable (uint32_t pwm_index) {
   switch (pwm_index) {
     case 1:
-      PWM1_REG(PWM_CFG) &= ~PWM_CFG_ENALWAYS;
+      PWM1_REG(PWM_COUNT) = 0;
+      PWM1_REG(PWM_CFG) = 0;
       break;
     case 2:
-      PWM2_REG(PWM_CFG) &= ~PWM_CFG_ENALWAYS;
+      PWM2_REG(PWM_COUNT) = 0;
+      PWM2_REG(PWM_CFG) = 0;
       break;
     default:
       break;
@@ -188,13 +189,13 @@ void pwm_hal_interrupt_register (uint32_t pwm_index, function_ptr_t fn) {
   switch (pwm_index) {
     case 1:
       g_ext_interrupt_handlers [INT_PWM1_BASE] = pwm1_interrupt_handler;
-      PLIC_set_priority(&g_plic, INT_PWM1_BASE, 1);
       PLIC_enable_interrupt (&g_plic, INT_PWM1_BASE);
+      PLIC_set_priority(&g_plic, INT_PWM1_BASE, 1);
       break;
     case 2:
       g_ext_interrupt_handlers [INT_PWM2_BASE] = pwm2_interrupt_handler;
-      PLIC_set_priority(&g_plic, INT_PWM2_BASE, 1);
       PLIC_enable_interrupt (&g_plic, INT_PWM2_BASE);
+      PLIC_set_priority(&g_plic, INT_PWM2_BASE, 1);
       break;
     default:
       break;

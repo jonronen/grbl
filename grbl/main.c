@@ -37,6 +37,9 @@ int main(void)
 {
   // Initialize system upon power-up.
   serial_init();   // Setup serial baud rate and interrupts
+  settings_init(); // Load Grbl settings from EEPROM
+  stepper_init();  // Configure stepper pins and interrupt timers
+  system_init();   // Configure pinout pins and pin-change interrupt
 
 #ifdef AVR
   sei(); // Enable interrupts
@@ -44,9 +47,9 @@ int main(void)
   interrupts_enable ();
 #endif
 
-  settings_init(); // Load Grbl settings from EEPROM
-  stepper_init();  // Configure stepper pins and interrupt timers
-  system_init();   // Configure pinout pins and pin-change interrupt
+  // if init failed, this is the time to report it (now that interrupts are
+  // enabled and the UART driver can print messages)
+  settings_report_init_status ();
 
   memset(sys_position,0,sizeof(sys_position)); // Clear machine position.
 

@@ -23,6 +23,7 @@
 
 settings_t settings;
 
+static bool init_failed;
 
 // Method to store startup lines into EEPROM
 void settings_store_startup_line(uint8_t n, char *line)
@@ -309,12 +310,20 @@ uint8_t settings_store_global_setting(uint8_t parameter, FLOAT value) {
 // Initialize the config subsystem
 void settings_init() {
   if(!read_global_settings()) {
-    report_status_message(STATUS_SETTING_READ_FAIL);
     settings_restore(SETTINGS_RESTORE_ALL); // Force restore all EEPROM data.
-    report_grbl_settings();
+    // don't report the new GRBL settings. interrupts are not enabled yet. it's
+    // better to just keep a flag that says we failed and use it later to
+    // report the failure when the UART can operate properly with interrupts.
+    init_failed = true;
   }
 }
 
+void settings_report_init_status () {
+  if (init_failed) {
+    report_status_message(STATUS_SETTING_READ_FAIL);
+    report_grbl_settings();
+  }
+}
 
 // Returns step pin mask according to Grbl internal axis indexing.
 #ifdef AVR

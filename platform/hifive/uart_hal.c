@@ -33,10 +33,6 @@ function_ptr_t g_rx_handler;
 
 static void uart_interrupt_handler (void) {
 
-  // disable interrupts first to enable reading the registers without changing
-  // the interrupt status in between register reads
-  clear_csr(mie, MIP_MEIP);
-
   // the interrupts pending depend on the IP register
   uint32_t uart_ip_reg = UART0_REG(UART_REG_IP);
   // mask the interrupts that were not enabled in the first place. this covers
@@ -50,9 +46,6 @@ static void uart_interrupt_handler (void) {
   if (uart_ip_reg & UART_IP_TXWM) {
     if (g_tx_handler) g_tx_handler ();
   }
-
-  // restore interrupts
-  set_csr(mie, MIP_MEIP);
 }
 
 
@@ -68,15 +61,13 @@ void uart_hal_setup (uint32_t baudrate) {
 
   // Disable the machine & timer interrupts until setup is done.
 
-  clear_csr(mie, MIP_MEIP);
-
   UART0_REG(UART_REG_DIV) = cpu_frequency () / baudrate + 1;
   UART0_REG(UART_REG_RXCTRL) = UART_RXEN;
   UART0_REG(UART_REG_TXCTRL) = UART_TXWM(8) | UART_TXEN;
-  UART0_REG(UART_REG_IE) = UART_IP_RXWM | UART_IP_TXWM;
+  UART0_REG(UART_REG_IE) = UART_IP_RXWM;
   g_ext_interrupt_handlers [INT_UART0_BASE] = uart_interrupt_handler;
-  PLIC_set_priority(&g_plic, INT_UART0_BASE, 1);
   PLIC_enable_interrupt (&g_plic, INT_UART0_BASE);
+  PLIC_set_priority(&g_plic, INT_UART0_BASE, 1);
 
   set_csr(mie, MIP_MEIP);
 }

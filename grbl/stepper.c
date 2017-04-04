@@ -80,7 +80,12 @@ static st_block_t st_block_buffer[SEGMENT_BUFFER_SIZE-1];
 // the planner, where the remaining planner block steps still can.
 typedef struct {
   uint16_t n_step;           // Number of step events to be executed for this segment
+#ifdef AVR
   uint16_t cycles_per_tick;  // Step distance traveled per ISR tick, aka step rate.
+#else
+  // Step distance traveled per ISR tick, aka step rate.
+  uint32_t cycles_per_tick;
+#endif
   uint8_t  st_block_index;   // Stepper block data index. Uses this information to execute this segment.
   #ifdef ADAPTIVE_MULTI_AXIS_STEP_SMOOTHING
     uint8_t amass_level;    // Indicates AMASS level for the ISR to execute this segment
@@ -366,7 +371,8 @@ static void pwm1_compare_interrupt ()
 #ifdef AVR
   sei(); // Re-enable interrupts to allow Stepper Port Reset Interrupt to fire on-time.
 #else
-  interrupts_enable ();
+  // TODO: enabling interrupts here seems to mess the interrupt status
+  //interrupts_enable ();
 #endif
          // NOTE: The remaining code in this ISR will finish before returning to main program.
 
@@ -1033,8 +1039,12 @@ void st_prep_buffer()
         cycles >>= prep_segment->amass_level;
         prep_segment->n_step <<= prep_segment->amass_level;
       }
+#ifdef AVR
       if (cycles < (1UL << 16)) { prep_segment->cycles_per_tick = cycles; } // < 65536 (4.1ms @ 16MHz)
       else { prep_segment->cycles_per_tick = 0xffff; } // Just set the slowest speed possible.
+#else
+      prep_segment->cycles_per_tick = cycles;
+#endif
     #else
       // Compute step timing and timer prescalar for normal step generation.
       if (cycles < (1UL << 16)) { // < 65536  (4.1ms @ 16MHz)
