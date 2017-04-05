@@ -109,8 +109,6 @@ int main(void)
 
     // Start Grbl main loop. Processes program inputs and executes them.
     protocol_main_loop();
-    uart_hal_send_byte ('m');
-
   }
   return 0;   /* Never reached */
 }

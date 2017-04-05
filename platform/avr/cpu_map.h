@@ -33,6 +33,7 @@
 #define SERIAL_UDRE   USART_UDRE_vect
 
 #define GPIO_SET_OUTPUTS(DDR_REG, VAL) (DDR_REG) |= (VAL);
+#define GPIO_SET_PWM_OUTPUTS(DDR_REG, VAL) (DDR_REG) |= (VAL);
 
 // Define step pulse output pins. NOTE: All step bit pins must be on the same port.
 #define STEP_DDR        DDRD
