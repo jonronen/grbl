@@ -67,7 +67,11 @@
 typedef struct {
   uint32_t steps[N_AXIS];
   uint32_t step_event_count;
+#ifdef AVR
   uint8_t direction_bits;
+#else
+  uint32_t direction_bits;
+#endif
   #ifdef VARIABLE_SPINDLE
     uint8_t is_pwm_rate_adjusted; // Tracks motions that require constant laser power/rate
   #endif
